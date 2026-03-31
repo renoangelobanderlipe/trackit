@@ -23,11 +23,14 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
   height: 100%;
-  /* Prevent overscroll/bounce on iOS */
-  overscroll-behavior: none;
+}
+
+html {
+  /* iOS: use dvh so 100% accounts for Safari's dynamic toolbar */
+  height: 100dvh;
 }
 
 body {
@@ -36,12 +39,11 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent overscroll bounce */
-  overscroll-behavior-y: none;
-  /* Use dynamic viewport for iOS */
-  min-height: 100dvh;
-  /* Prevent pull-to-refresh in standalone */
+  /* Allow normal scrolling — iOS needs this on body */
+  overflow-y: auto;
   overflow-x: hidden;
+  /* Momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── iOS / Mobile app-like behavior ── */
@@ -66,7 +68,7 @@ nav,
   -webkit-touch-callout: none;
 }
 
-/* Prevent double-tap zoom on all interactive elements */
+/* Prevent double-tap zoom on interactive elements */
 button,
 a,
 [role="button"],
@@ -84,12 +86,19 @@ textarea {
 
 /* ── Standalone mode (Add to Home Screen) ── */
 @media (display-mode: standalone) {
+  /* Prevent pull-to-refresh: lock html, scroll on body */
   html {
     overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 
   body {
-    overflow: auto;
+    overflow-y: scroll;
+    width: 100%;
+    height: 100%;
+    /* iOS standalone needs this for momentum scroll */
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -97,12 +106,12 @@ textarea {
 
 /* Hide scrollbar on mobile */
 @media (max-width: 768px) {
-  * {
+  body {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
 
-  *::-webkit-scrollbar {
+  body::-webkit-scrollbar {
     display: none;
   }
 }
@@ -121,16 +130,4 @@ textarea {
     background: #cbd5e1;
     border-radius: 99px;
   }
-}
-
-/* ── Smooth transitions ── */
-* {
-  transition-property: background-color, border-color, color, opacity;
-  transition-duration: 0.15s;
-  transition-timing-function: ease;
-}
-
-/* Disable transitions on scroll/resize to prevent jank */
-.no-transition * {
-  transition: none !important;
 }

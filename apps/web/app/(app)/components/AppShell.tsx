@@ -35,6 +35,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <Box
       sx={{
         pb: `calc(${NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`,
+        /* In standalone, AppBar is fixed — add top space so content isn't hidden behind it */
+        "@media (display-mode: standalone)": {
+          pt: "calc(56px + env(safe-area-inset-top, 0px))",
+        },
       }}
     >
       {/*
@@ -47,6 +51,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         sx={{
           borderBottom: "1px solid",
           borderColor: "divider",
+          /* In standalone PWA, html is fixed so sticky won't work — use fixed instead */
+          "@media (display-mode: standalone)": {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+          },
         }}
       >
         <Toolbar
