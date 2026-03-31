@@ -1,0 +1,132 @@
+import { cookies } from "next/headers";
+
+const LARAVEL_URL = process.env.LARAVEL_URL ?? "http://localhost:8000";
+const FRONTEND_URL = "http://localhost:3000";
+
+type RpcOptions = {
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: unknown;
+  headers?: Record<string, string>;
+};
+
+type RpcResponse<T> =
+  | {
+      data: T;
+      ok: true;
+    }
+  | {
+      error: string;
+      status: number;
+      ok: false;
+    };
+
+/**
+ * Build Cookie header from cookie store using raw (decoded) values.
+ * cookieStore.toString() URL-encodes values which Laravel can't decrypt.
+ */
+async function buildCookieHeader(): Promise<string> {
+  const cookieStore = await cookies();
+  return cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+}
+
+/**
+ * Read-only RPC call. Safe for Server Components.
+ * Forwards cookies but does NOT set cookies back.
+ */
+export async function rpc<T>(
+  path: string,
+  options: RpcOptions = {},
+): Promise<RpcResponse<T>> {
+  const { method = "GET", body, headers = {} } = options;
+
+  const url = `${LARAVEL_URL}/api${path}`;
+  const cookieHeader = await buildCookieHeader();
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Referer: FRONTEND_URL,
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      ...headers,
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    return {
+      error: text || res.statusText,
+      status: res.status,
+      ok: false,
+    };
+  }
+
+  const data = (await res.json()) as T;
+  return { data, ok: true };
+}
+
+/**
+ * Mutable RPC call that forwards Set-Cookie headers back to browser.
+ * Only use in Server Actions and Route Handlers (NOT Server Components).
+ */
+export async function rpcMutable<T>(
+  path: string,
+  options: RpcOptions = {},
+): Promise<RpcResponse<T>> {
+  const { method = "GET", body, headers = {} } = options;
+
+  const url = `${LARAVEL_URL}/api${path}`;
+  const cookieHeader = await buildCookieHeader();
+
+  const cookieStore = await cookies();
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Referer: FRONTEND_URL,
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      ...headers,
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  console.log(`[rpcMutable] ${method} ${path} → ${res.status}`);
+
+  // Store response cookies on the Next.js domain for future rpc() calls
+  const setCookieHeaders = res.headers.getSetCookie?.() ?? [];
+  for (const setCookie of setCookieHeaders) {
+    const [nameValue] = setCookie.split(";");
+    const eqIndex = nameValue.indexOf("=");
+    if (eqIndex > 0) {
+      const name = nameValue.slice(0, eqIndex).trim();
+      const value = decodeURIComponent(nameValue.slice(eqIndex + 1));
+      cookieStore.set(name, value, {
+        path: "/",
+        httpOnly: name !== "XSRF-TOKEN",
+        sameSite: "lax",
+        maxAge: 7200,
+      });
+    }
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.log(`[rpcMutable] ${method} ${path} error: ${text.slice(0, 300)}`);
+    return {
+      error: text || res.statusText,
+      status: res.status,
+      ok: false,
+    };
+  }
+
+  const data = (await res.json()) as T;
+  return { data, ok: true };
+}
