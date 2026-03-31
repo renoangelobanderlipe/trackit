@@ -1,6 +1,6 @@
 "use client";
 
-import { type Variants, motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 
 const container: Variants = {
   hidden: {},
@@ -20,11 +20,7 @@ const item: Variants = {
   },
 };
 
-export function StaggerContainer({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function StaggerContainer({ children }: { children: React.ReactNode }) {
   return (
     <motion.div variants={container} initial="hidden" animate="show">
       {children}

@@ -1,21 +1,15 @@
 "use client";
 
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import Avatar from "@mui/material/Avatar";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
+import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
+import Link from "next/link";
 import AnimatedProgress from "@/components/animations/AnimatedProgress";
 import CountUp from "@/components/animations/CountUp";
 import FadeIn from "@/components/animations/FadeIn";
@@ -23,12 +17,13 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/StaggerList";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
 import type { DashboardData } from "@/lib/types";
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
   const totalOwed = Number.parseFloat(data.total_owed);
   const totalPaid = Number.parseFloat(data.total_paid);
+  const progressPercent = totalOwed > 0 ? (totalPaid / totalOwed) * 100 : 0;
 
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
@@ -44,41 +39,128 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           sx={{
             mb: 2.5,
             border: "none",
-            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+            background:
+              "linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%)",
             color: "white",
+            overflow: "hidden",
+            position: "relative",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: -40,
+              right: -40,
+              width: 140,
+              height: 140,
+              borderRadius: "50%",
+              bgcolor: "rgba(255,255,255,0.05)",
+            }}
+          />
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: -20,
+              left: -20,
+              width: 80,
+              height: 80,
+              borderRadius: "50%",
+              bgcolor: "rgba(255,255,255,0.03)",
+            }}
+          />
+          <CardContent sx={{ p: 2.5, position: "relative" }}>
             <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", mb: 0.5 }}
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
             >
               Total Outstanding
             </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: "2rem",
+                lineHeight: 1.2,
+                letterSpacing: "-0.02em",
+                mb: 1.5,
+              }}
+            >
               <CountUp value={totalOwed} prefix="₱" />
             </Typography>
-            <Box sx={{ display: "flex", gap: 3 }}>
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.6)" }}
-                >
-                  Paid
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  <CountUp value={totalPaid} prefix="₱" delay={0.3} />
-                </Typography>
+
+            <AnimatedProgress
+              value={progressPercent}
+              sx={{
+                mb: 0.75,
+                height: 6,
+                bgcolor: "rgba(255,255,255,0.15)",
+                "& .MuiLinearProgress-bar": {
+                  bgcolor: "white",
+                  borderRadius: 3,
+                },
+              }}
+            />
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Box sx={{ display: "flex", gap: 2.5 }}>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "rgba(255,255,255,0.5)", fontSize: "0.6rem" }}
+                  >
+                    Paid
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "0.85rem",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <CountUp value={totalPaid} prefix="₱" delay={0.3} />
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "rgba(255,255,255,0.5)", fontSize: "0.6rem" }}
+                  >
+                    Active
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: "0.85rem",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    <CountUp value={data.active_loans_count} delay={0.5} />
+                  </Typography>
+                </Box>
               </Box>
-              <Box>
+              <Box
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  borderRadius: 1.5,
+                  px: 1,
+                  py: 0.125,
+                }}
+              >
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.6)" }}
+                  sx={{ fontWeight: 700, fontSize: "0.7rem" }}
                 >
-                  Active Loans
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                  <CountUp value={data.active_loans_count} delay={0.5} />
+                  {Math.round(progressPercent)}%
                 </Typography>
               </Box>
             </Box>
@@ -86,148 +168,121 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         </Card>
       </FadeIn>
 
-      {/* Quick Stats */}
-      <StaggerContainer>
-        <Grid container spacing={1.5} sx={{ mb: 2.5 }}>
-          <Grid size={{ xs: 4 }}>
-            <StaggerItem>
-              <Card sx={{ textAlign: "center" }}>
-                <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-                  <Avatar
-                    sx={{
-                      mx: "auto",
-                      mb: 0.5,
-                      width: 36,
-                      height: 36,
-                      bgcolor: "primary.light",
-                      color: "primary.dark",
-                    }}
-                  >
-                    <ReceiptLongIcon sx={{ fontSize: 18 }} />
-                  </Avatar>
-                  <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
-                    <CountUp value={data.active_loans_count} delay={0.2} />
-                  </Typography>
-                  <Typography variant="caption">Active</Typography>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <StaggerItem>
-              <Card sx={{ textAlign: "center" }}>
-                <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-                  <Avatar
-                    sx={{
-                      mx: "auto",
-                      mb: 0.5,
-                      width: 36,
-                      height: 36,
-                      bgcolor: "error.light",
-                      color: "error.dark",
-                    }}
-                  >
-                    <TrendingDownIcon sx={{ fontSize: 18 }} />
-                  </Avatar>
-                  <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
-                    <CountUp value={totalOwed} prefix="₱" delay={0.3} />
-                  </Typography>
-                  <Typography variant="caption">Owed</Typography>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          </Grid>
-          <Grid size={{ xs: 4 }}>
-            <StaggerItem>
-              <Card sx={{ textAlign: "center" }}>
-                <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-                  <Avatar
-                    sx={{
-                      mx: "auto",
-                      mb: 0.5,
-                      width: 36,
-                      height: 36,
-                      bgcolor: "success.light",
-                      color: "success.dark",
-                    }}
-                  >
-                    <CheckCircleOutlineIcon sx={{ fontSize: 18 }} />
-                  </Avatar>
-                  <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
-                    <CountUp value={totalPaid} prefix="₱" delay={0.4} />
-                  </Typography>
-                  <Typography variant="caption">Paid</Typography>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          </Grid>
-        </Grid>
-      </StaggerContainer>
-
       {/* Upcoming Payments */}
       {data.upcoming_payments.length > 0 && (
-        <FadeIn delay={0.3}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+        <FadeIn delay={0.2}>
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              fontSize: "0.65rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "text.secondary",
+              display: "block",
+              mb: 1,
+            }}
+          >
             Upcoming Payments
           </Typography>
           <Card sx={{ mb: 2.5 }}>
-            <List disablePadding>
-              {data.upcoming_payments.map((payment, idx) => (
-                <ListItem
-                  key={payment.id}
-                  divider={idx < data.upcoming_payments.length - 1}
-                  sx={{ px: 2, py: 1.5 }}
-                >
-                  <ListItemAvatar sx={{ minWidth: 44 }}>
-                    <Avatar
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        fontSize: 14,
-                        fontWeight: 700,
-                        bgcolor: payment.is_overdue
-                          ? "error.light"
-                          : "primary.light",
-                        color: payment.is_overdue
-                          ? "error.dark"
-                          : "primary.dark",
-                      }}
-                    >
-                      {payment.loan.title.slice(0, 2).toUpperCase()}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="body2"
-                        fontWeight={600}
-                        color="text.primary"
-                      >
-                        {payment.loan.title}
-                      </Typography>
-                    }
-                    secondary={`${payment.label} · Due ${formatDate(payment.due_date)}`}
-                  />
-                  <Chip
-                    label={formatCurrency(payment.amount)}
-                    size="small"
-                    color={payment.is_overdue ? "error" : "default"}
-                    variant={payment.is_overdue ? "filled" : "outlined"}
-                  />
-                </ListItem>
-              ))}
-            </List>
+            {data.upcoming_payments.map((payment, idx) => (
+              <Box
+                key={payment.id}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  px: 2,
+                  py: 1.5,
+                  borderBottom:
+                    idx < data.upcoming_payments.length - 1
+                      ? "1px solid"
+                      : "none",
+                  borderColor: "divider",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    bgcolor: payment.is_overdue ? "error.main" : "primary.main",
+                    flexShrink: 0,
+                  }}
+                />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={600}
+                    color="text.primary"
+                    noWrap
+                    sx={{ fontSize: "0.85rem" }}
+                  >
+                    {payment.loan.title}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: "0.68rem" }}>
+                    {payment.label} · {formatDate(payment.due_date)}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={formatCurrency(payment.amount)}
+                  size="small"
+                  color={payment.is_overdue ? "error" : "default"}
+                  variant={payment.is_overdue ? "filled" : "outlined"}
+                  sx={{
+                    fontWeight: 700,
+                    height: 24,
+                    "& .MuiChip-label": { px: 1 },
+                  }}
+                />
+              </Box>
+            ))}
           </Card>
         </FadeIn>
       )}
 
-      {/* Active Loans */}
+      {/* Active Loans — matching loan list style */}
       {data.loans_summary.length > 0 && (
         <>
-          <FadeIn delay={0.4}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Active Loans
-            </Typography>
+          <FadeIn delay={0.3}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: "0.65rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "text.secondary",
+                }}
+              >
+                Active Loans
+              </Typography>
+              <Link href="/loans" style={{ textDecoration: "none" }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.7rem",
+                    color: "primary.main",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.25,
+                  }}
+                >
+                  View all
+                  <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
+                </Typography>
+              </Link>
+            </Box>
           </FadeIn>
           <StaggerContainer>
             {data.loans_summary.map((loan) => {
@@ -235,59 +290,101 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 (Number.parseFloat(loan.total_paid) /
                   Number.parseFloat(loan.total_amount)) *
                 100;
+              const paidCount = Math.round(
+                (progress / 100) * loan.num_installments,
+              );
               return (
                 <StaggerItem key={loan.id}>
-                  <Card sx={{ mb: 1.5 }}>
-                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 1,
-                        }}
-                      >
-                        <Box
+                  <Link
+                    href={`/loans/${loan.id}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <Card sx={{ mb: 1 }}>
+                      <CardActionArea sx={{ borderRadius: 4 }}>
+                        <CardContent
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
+                            px: 2,
+                            py: 1.5,
+                            "&:last-child": { pb: 1.5 },
                           }}
                         >
-                          <Avatar
+                          <Box
                             sx={{
-                              width: 28,
-                              height: 28,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              bgcolor: "primary.light",
-                              color: "primary.dark",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 0.5,
                             }}
                           >
-                            {loan.title.slice(0, 2).toUpperCase()}
-                          </Avatar>
-                          <Typography
-                            variant="body2"
-                            fontWeight={600}
-                            color="text.primary"
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              color="text.primary"
+                              noWrap
+                              sx={{ fontSize: "0.85rem" }}
+                            >
+                              {loan.title}
+                            </Typography>
+                            <Chip
+                              label={`${Math.round(progress)}%`}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              sx={{
+                                height: 20,
+                                fontSize: "0.6rem",
+                                fontWeight: 700,
+                                flexShrink: 0,
+                                "& .MuiChip-label": { px: 0.75 },
+                              }}
+                            />
+                          </Box>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              mt: 0.25,
+                            }}
                           >
-                            {loan.title}
-                          </Typography>
-                        </Box>
-                        <Typography variant="caption">
-                          {Math.round(progress)}%
-                        </Typography>
-                      </Box>
-                      <AnimatedProgress value={progress} />
-                      <Typography
-                        variant="caption"
-                        sx={{ mt: 0.5, display: "block" }}
-                      >
-                        {formatCurrency(loan.total_paid)} /{" "}
-                        {formatCurrency(loan.total_amount)}
-                      </Typography>
-                    </CardContent>
-                  </Card>
+                            {loan.provider && (
+                              <Typography
+                                variant="caption"
+                                sx={{ fontSize: "0.68rem", flexShrink: 0 }}
+                              >
+                                {loan.provider}
+                              </Typography>
+                            )}
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontSize: "0.68rem",
+                                color: "text.disabled",
+                              }}
+                            >
+                              {paidCount}/{loan.num_installments} paid
+                            </Typography>
+                            {loan.next_due_date && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: "0.68rem",
+                                  color: "text.disabled",
+                                  ml: "auto",
+                                }}
+                              >
+                                {formatDateShort(loan.next_due_date)}
+                              </Typography>
+                            )}
+                          </Box>
+                          <AnimatedProgress
+                            value={progress}
+                            sx={{ mt: 0.75, height: 4 }}
+                          />
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Link>
                 </StaggerItem>
               );
             })}
