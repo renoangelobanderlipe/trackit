@@ -32,8 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Box
       sx={{
-        // Bottom padding = nav height + safe area
-        pb: "calc(64px + var(--safe-bottom, 0px) + 16px)",
+        pb: "calc(64px + env(safe-area-inset-bottom, 0px))",
       }}
     >
       <AppBar
@@ -42,8 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         sx={{
           borderBottom: "1px solid",
           borderColor: "divider",
-          // Extend into safe area on standalone iOS
-          pt: "var(--safe-top, 0px)",
+          pt: "env(safe-area-inset-top, 0px)",
         }}
       >
         <Toolbar sx={{ px: 2, minHeight: { xs: 56 } }}>
@@ -86,8 +84,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           zIndex: 1100,
           borderTop: "1px solid",
           borderColor: "divider",
-          // Extend into home indicator safe area
-          pb: "var(--safe-bottom, 0px)",
+          pb: "env(safe-area-inset-bottom, 0px)",
         }}
         elevation={0}
       >

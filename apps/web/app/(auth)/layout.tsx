@@ -207,7 +207,7 @@ export default function AuthLayout({
             background: "#080f0e",
             color: "white",
             px: 3,
-            pt: "calc(var(--safe-top, 0px) + 40px)",
+            pt: "calc(env(safe-area-inset-top, 0px) + 40px)",
             pb: 4.5,
             position: "relative",
             overflow: "hidden",
