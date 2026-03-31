@@ -67,6 +67,10 @@ export async function rpc<T>(
     };
   }
 
+  if (res.status === 204) {
+    return { data: null as T, ok: true };
+  }
+
   const data = (await res.json()) as T;
   return { data, ok: true };
 }
@@ -125,6 +129,10 @@ export async function rpcMutable<T>(
       status: res.status,
       ok: false,
     };
+  }
+
+  if (res.status === 204) {
+    return { data: null as T, ok: true };
   }
 
   const data = (await res.json()) as T;
