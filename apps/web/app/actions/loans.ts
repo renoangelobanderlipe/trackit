@@ -4,7 +4,7 @@ import { rpc, rpcMutable } from "@/lib/rpc";
 import type { CreateLoanPayload, Loan, LoanDetail } from "@/lib/types";
 
 export async function getLoans() {
-  return rpc<{ data: Loan[] }>("/loans");
+  return rpc<{ data: LoanDetail[] }>("/loans");
 }
 
 export async function getLoan(id: string) {
