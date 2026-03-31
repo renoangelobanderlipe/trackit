@@ -1,12 +1,15 @@
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import { getLoans } from "@/app/actions/loans";
+import { getLoanFilters, getLoans } from "@/app/actions/loans";
 import LoanListClient from "./components/LoanListClient";
 
 export default async function LoansPage() {
-  const result = await getLoans();
+  const [loansResult, filtersResult] = await Promise.all([
+    getLoans(),
+    getLoanFilters(),
+  ]);
 
-  if (!result.ok) {
+  if (!loansResult.ok) {
     return (
       <Container maxWidth="sm" sx={{ py: 3 }}>
         <Typography color="error">Failed to load loans.</Typography>
@@ -14,9 +17,14 @@ export default async function LoansPage() {
     );
   }
 
+  const savedFilters = filtersResult.ok ? filtersResult.data : undefined;
+
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
-      <LoanListClient loans={result.data.data} />
+      <LoanListClient
+        loans={loansResult.data.data}
+        savedFilters={savedFilters}
+      />
     </Container>
   );
 }

@@ -31,3 +31,21 @@ export async function updateLoan(
 export async function deleteLoan(id: string) {
   return rpcMutable<null>(`/loans/${id}`, { method: "DELETE" });
 }
+
+export type LoanFilters = {
+  status?: string;
+  provider?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export async function getLoanFilters() {
+  return rpc<LoanFilters>("/loan-filters");
+}
+
+export async function saveLoanFilters(filters: LoanFilters) {
+  return rpcMutable<LoanFilters>("/loan-filters", {
+    method: "PUT",
+    body: filters,
+  });
+}

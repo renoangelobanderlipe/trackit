@@ -20,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
+import { type LoanFilters, saveLoanFilters } from "@/app/actions/loans";
 import AnimatedProgress from "@/components/animations/AnimatedProgress";
 import FadeIn from "@/components/animations/FadeIn";
 import PulsingFab from "@/components/animations/PulsingFab";
@@ -27,7 +28,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/StaggerList";
-import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
+import { formatCurrency, formatDateShort } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
 
 const statuses = [
@@ -37,14 +38,22 @@ const statuses = [
   { value: "done", label: "Done" },
 ];
 
-export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
+type Props = {
+  loans: LoanDetail[];
+  savedFilters?: LoanFilters;
+};
+
+export default function LoanListClient({ loans, savedFilters }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Filter state
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [providerFilter, setProviderFilter] = useState("all");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [statusFilter, setStatusFilter] = useState(
+    savedFilters?.status ?? "all",
+  );
+  const [providerFilter, setProviderFilter] = useState(
+    savedFilters?.provider ?? "all",
+  );
+  const [dateFrom, setDateFrom] = useState(savedFilters?.dateFrom ?? "");
+  const [dateTo, setDateTo] = useState(savedFilters?.dateTo ?? "");
 
   const hasDateFilter = dateFrom && dateTo;
   const activeFilterCount =
@@ -97,11 +106,26 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
       )
     : null;
 
+  function persistFilters(
+    s = statusFilter,
+    p = providerFilter,
+    df = dateFrom,
+    dt = dateTo,
+  ) {
+    saveLoanFilters({
+      status: s,
+      provider: p,
+      dateFrom: df,
+      dateTo: dt,
+    });
+  }
+
   function clearAllFilters() {
     setStatusFilter("all");
     setProviderFilter("all");
     setDateFrom("");
     setDateTo("");
+    persistFilters("all", "all", "", "");
   }
 
   return (
@@ -134,7 +158,10 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
             <Chip
               label={statuses.find((s) => s.value === statusFilter)?.label}
               size="small"
-              onDelete={() => setStatusFilter("all")}
+              onDelete={() => {
+                setStatusFilter("all");
+                persistFilters("all", providerFilter, dateFrom, dateTo);
+              }}
               color="primary"
               variant="outlined"
             />
@@ -143,7 +170,10 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
             <Chip
               label={providerFilter}
               size="small"
-              onDelete={() => setProviderFilter("all")}
+              onDelete={() => {
+                setProviderFilter("all");
+                persistFilters(statusFilter, "all", dateFrom, dateTo);
+              }}
               color="primary"
               variant="outlined"
             />
@@ -155,6 +185,7 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
               onDelete={() => {
                 setDateFrom("");
                 setDateTo("");
+                persistFilters(statusFilter, providerFilter, "", "");
               }}
               color="primary"
               variant="outlined"
@@ -564,7 +595,10 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
           <Button
             variant="contained"
             fullWidth
-            onClick={() => setDrawerOpen(false)}
+            onClick={() => {
+              persistFilters();
+              setDrawerOpen(false);
+            }}
             sx={{ borderRadius: 3, py: 1.25 }}
           >
             Apply
