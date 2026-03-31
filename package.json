@@ -3,23 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "pnpm --filter @trackit/web dev",
+    "dev:server": "cd apps/server && composer run dev",
+    "build": "pnpm --filter @trackit/web build",
+    "start": "pnpm --filter @trackit/web start",
     "lint": "biome check",
-    "format": "biome format --write"
-  },
-  "dependencies": {
-    "next": "16.2.1",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "lint:server": "cd apps/server && vendor/bin/pint --dirty --format agent",
+    "format": "biome format --write",
+    "test:server": "cd apps/server && php artisan test --compact"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.0",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "typescript": "^5"
+    "@biomejs/biome": "2.2.0"
   }
 }

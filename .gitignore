@@ -14,11 +14,18 @@
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
 /build
+
+# laravel
+apps/server/vendor/
+apps/server/storage/*.key
+apps/server/.env
+apps/server/.env.backup
+apps/server/.phpunit.cache
 
 # misc
 .DS_Store
