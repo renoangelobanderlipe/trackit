@@ -1,6 +1,8 @@
 "use client";
 
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import Alert from "@mui/material/Alert";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -29,8 +31,7 @@ export default function RegisterPage() {
     setLoading(false);
 
     if (!result.ok) {
-      const parsed = safeParseError(result.error);
-      setError(parsed);
+      setError(safeParseError(result.error));
       return;
     }
 
@@ -39,15 +40,26 @@ export default function RegisterPage() {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" fontWeight={700} gutterBottom>
-        Create account
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Start tracking your loans with TrackIt
-      </Typography>
+      <Box sx={{ textAlign: "center", mb: 3 }}>
+        <Avatar
+          sx={{
+            mx: "auto",
+            mb: 2,
+            width: 56,
+            height: 56,
+            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+          }}
+        >
+          <AccountBalanceWalletIcon sx={{ fontSize: 28 }} />
+        </Avatar>
+        <Typography variant="h5" component="h1" gutterBottom>
+          Create account
+        </Typography>
+        <Typography variant="body2">Start tracking your loans</Typography>
+      </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
           {error}
         </Alert>
       )}
@@ -94,13 +106,20 @@ export default function RegisterPage() {
           fullWidth
           size="large"
           disabled={loading}
-          sx={{ mb: 2 }}
+          sx={{ mb: 2.5 }}
         >
           {loading ? "Creating account..." : "Create account"}
         </Button>
-        <Typography variant="body2" align="center" color="text.secondary">
+        <Typography variant="body2" align="center">
           Already have an account?{" "}
-          <Link href="/login" style={{ color: "inherit", fontWeight: 600 }}>
+          <Link
+            href="/login"
+            style={{
+              color: "#0d9488",
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
             Sign in
           </Link>
         </Typography>

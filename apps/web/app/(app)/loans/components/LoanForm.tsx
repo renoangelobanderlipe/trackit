@@ -174,16 +174,25 @@ export default function LoanForm() {
         <Box
           sx={{
             mb: 2,
-            p: 2,
-            bgcolor: "action.hover",
-            borderRadius: 1,
+            p: 2.5,
+            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
+            borderRadius: 3,
+            textAlign: "center",
           }}
         >
-          <Typography variant="body2" fontWeight={600} gutterBottom>
-            Preview
+          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+            Installment Preview
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {count} installments of ₱{perInstallment.toFixed(2)} each
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            color="primary.main"
+            sx={{ my: 0.5 }}
+          >
+            ₱{perInstallment.toFixed(2)}
+          </Typography>
+          <Typography variant="caption">
+            {count} payments · {frequency.replace(/_/g, " ")}
           </Typography>
         </Box>
       )}

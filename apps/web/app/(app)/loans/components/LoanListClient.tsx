@@ -1,21 +1,31 @@
 "use client";
 
-import AddIcon from "@mui/icons-material/Add";
-import ClearIcon from "@mui/icons-material/Clear";
+import CloseIcon from "@mui/icons-material/Close";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import Avatar from "@mui/material/Avatar";
+import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
-import Fab from "@mui/material/Fab";
-import LinearProgress from "@mui/material/LinearProgress";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useState } from "react";
+import AnimatedProgress from "@/components/animations/AnimatedProgress";
+import FadeIn from "@/components/animations/FadeIn";
+import PulsingFab from "@/components/animations/PulsingFab";
+import {
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/StaggerList";
+import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
+import DateRangeCalendar from "./DateRangeCalendar";
 
 const statuses = [
   { value: "all", label: "All" },
@@ -25,19 +35,25 @@ const statuses = [
 ];
 
 export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Filter state
   const [statusFilter, setStatusFilter] = useState("all");
   const [providerFilter, setProviderFilter] = useState("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
   const hasDateFilter = dateFrom && dateTo;
+  const activeFilterCount =
+    (statusFilter !== "all" ? 1 : 0) +
+    (providerFilter !== "all" ? 1 : 0) +
+    (hasDateFilter ? 1 : 0);
 
-  // Build unique provider list from data
   const providers = [
     ...new Set(loans.map((l) => l.provider).filter(Boolean)),
   ] as string[];
 
-  // Apply status + provider filters
+  // Apply filters
   let baseFiltered = loans;
   if (statusFilter !== "all") {
     baseFiltered = baseFiltered.filter((l) => l.status === statusFilter);
@@ -46,7 +62,6 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
     baseFiltered = baseFiltered.filter((l) => l.provider === providerFilter);
   }
 
-  // Apply date range filter and compute matching installments per loan
   const filtered = hasDateFilter
     ? baseFiltered
         .map((loan) => {
@@ -58,7 +73,6 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
         .filter(({ matching }) => matching.length > 0)
     : baseFiltered.map((loan) => ({ loan, matching: null }));
 
-  // Compute date range summary
   const rangeSummary = hasDateFilter
     ? filtered.reduce(
         (acc, { matching }) => {
@@ -80,234 +94,467 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
       )
     : null;
 
+  function clearAllFilters() {
+    setStatusFilter("all");
+    setProviderFilter("all");
+    setDateFrom("");
+    setDateTo("");
+  }
+
   return (
     <>
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 1.5,
+          mb: 2,
         }}
       >
-        <Typography variant="h5" fontWeight={700}>
-          Loans
-        </Typography>
-        <TextField
-          select
-          size="small"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          sx={{ minWidth: 140 }}
-        >
-          {statuses.map((s) => (
-            <MenuItem key={s.value} value={s.value}>
-              {s.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        {providers.length > 0 && (
-          <TextField
-            select
-            size="small"
-            value={providerFilter}
-            onChange={(e) => setProviderFilter(e.target.value)}
-            sx={{ minWidth: 130 }}
+        <Typography variant="h5">Loans</Typography>
+        <IconButton onClick={() => setDrawerOpen(true)}>
+          <Badge
+            badgeContent={activeFilterCount}
+            color="primary"
+            invisible={activeFilterCount === 0}
           >
-            <MenuItem value="all">All Providers</MenuItem>
-            {providers.map((p) => (
-              <MenuItem key={p} value={p}>
-                {p}
-              </MenuItem>
-            ))}
-          </TextField>
-        )}
+            <FilterListIcon />
+          </Badge>
+        </IconButton>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2 }}>
-        <TextField
-          type="date"
-          size="small"
-          label="From"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ flex: 1 }}
-        />
-        <Typography variant="body2" color="text.secondary">
-          —
-        </Typography>
-        <TextField
-          type="date"
-          size="small"
-          label="To"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ flex: 1 }}
-        />
-        {hasDateFilter && (
-          <Button
-            size="small"
-            onClick={() => {
-              setDateFrom("");
-              setDateTo("");
-            }}
-            sx={{ minWidth: 0, p: 0.5 }}
-          >
-            <ClearIcon fontSize="small" />
-          </Button>
-        )}
-      </Box>
+      {/* Active filter chips */}
+      {activeFilterCount > 0 && (
+        <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", mb: 2 }}>
+          {statusFilter !== "all" && (
+            <Chip
+              label={statuses.find((s) => s.value === statusFilter)?.label}
+              size="small"
+              onDelete={() => setStatusFilter("all")}
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          {providerFilter !== "all" && (
+            <Chip
+              label={providerFilter}
+              size="small"
+              onDelete={() => setProviderFilter("all")}
+              color="primary"
+              variant="outlined"
+            />
+          )}
+          {hasDateFilter && (
+            <Chip
+              label={`${formatDateShort(dateFrom)} → ${formatDateShort(dateTo)}`}
+              size="small"
+              onDelete={() => {
+                setDateFrom("");
+                setDateTo("");
+              }}
+              color="primary"
+              variant="outlined"
+            />
+          )}
+        </Box>
+      )}
 
+      {/* Range Summary */}
       {rangeSummary && (
-        <Card sx={{ mb: 2, bgcolor: "primary.50" }}>
+        <Card
+          sx={{
+            mb: 2,
+            border: "none",
+            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
+          }}
+        >
           <CardContent
             sx={{
-              py: 1.5,
-              "&:last-child": { pb: 1.5 },
+              py: 2,
+              "&:last-child": { pb: 2 },
               textAlign: "center",
             }}
           >
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h5" fontWeight={800} color="primary.main">
               {formatCurrency(rangeSummary.total)}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption">
               {rangeSummary.count} installment
-              {rangeSummary.count !== 1 ? "s" : ""} due · {dateFrom} → {dateTo}
+              {rangeSummary.count !== 1 ? "s" : ""} due in range
             </Typography>
           </CardContent>
         </Card>
       )}
 
-      {filtered.length === 0 && (
+      {/* Empty State */}
+      {filtered.length === 0 && !rangeSummary && (
         <Card sx={{ mt: 2 }}>
-          <CardContent sx={{ textAlign: "center", py: 4 }}>
-            <Typography color="text.secondary">
-              {hasDateFilter
-                ? "No installments due in this date range."
-                : statusFilter === "all"
-                  ? "No loans yet. Tap + to create one."
-                  : `No ${statuses.find((s) => s.value === statusFilter)?.label?.toLowerCase()} loans.`}
+          <CardContent sx={{ textAlign: "center", py: 6 }}>
+            <ReceiptLongIcon
+              sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
+            />
+            <Typography variant="body1" fontWeight={600} gutterBottom>
+              {activeFilterCount > 0 ? "No matching loans" : "No loans yet"}
+            </Typography>
+            <Typography variant="body2">
+              {activeFilterCount > 0
+                ? "Try adjusting your filters."
+                : "Tap + to create your first loan."}
             </Typography>
           </CardContent>
         </Card>
       )}
 
-      {filtered.map(({ loan, matching }) => {
-        const progress =
-          (Number.parseFloat(loan.total_paid) /
-            Number.parseFloat(loan.total_amount)) *
-          100;
-        const paidCount = Math.round((progress / 100) * loan.num_installments);
+      {/* Loan Cards */}
+      <StaggerContainer>
+        {filtered.map(({ loan, matching }) => {
+          const progress =
+            (Number.parseFloat(loan.total_paid) /
+              Number.parseFloat(loan.total_amount)) *
+            100;
+          const paidCount = Math.round(
+            (progress / 100) * loan.num_installments,
+          );
 
-        // When date filtered, show matching installment info instead of overall progress
-        const matchInfo = matching
-          ? {
-              count: matching.length,
-              total: matching.reduce(
-                (sum, i) => sum + Number.parseFloat(i.amount),
-                0,
-              ),
-              remaining: matching.reduce(
-                (sum, i) =>
-                  sum +
-                  (Number.parseFloat(i.amount) -
-                    Number.parseFloat(i.paid_amount)),
-                0,
-              ),
-            }
-          : null;
+          const matchInfo = matching
+            ? {
+                count: matching.length,
+                remaining: matching.reduce(
+                  (sum, i) =>
+                    sum +
+                    (Number.parseFloat(i.amount) -
+                      Number.parseFloat(i.paid_amount)),
+                  0,
+                ),
+              }
+            : null;
 
-        return (
-          <Link
-            key={loan.id}
-            href={`/loans/${loan.id}`}
-            style={{ textDecoration: "none" }}
-          >
-            <Card sx={{ mb: 1.5 }}>
-              <CardActionArea>
-                <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-                  <Typography
-                    variant="body1"
-                    fontWeight={600}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    {loan.title}
-                    {loan.provider && (
-                      <Chip
-                        label={loan.provider}
-                        size="small"
-                        variant="outlined"
-                        sx={{ ml: 1 }}
-                      />
-                    )}
-                    <Chip
-                      label={statusLabel(loan.status)}
-                      size="small"
-                      color={statusColor(loan.status)}
-                      variant="outlined"
-                    />
-                  </Typography>
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.min(progress, 100)}
-                    sx={{ my: 1, height: 6, borderRadius: 3 }}
-                  />
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {matchInfo ? (
-                      <>
-                        <span>
-                          {matchInfo.count} installment
-                          {matchInfo.count !== 1 ? "s" : ""} in range
-                        </span>
-                        <span>{formatCurrency(matchInfo.remaining)} due</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>
-                          {paidCount} of {loan.num_installments} paid
-                        </span>
-                        {loan.next_due_date && (
-                          <span>Next: {loan.next_due_date}</span>
+          return (
+            <StaggerItem key={loan.id}>
+              <Link
+                href={`/loans/${loan.id}`}
+                style={{ textDecoration: "none" }}
+              >
+                <Card sx={{ mb: 1.5 }}>
+                  <CardActionArea sx={{ borderRadius: 4 }}>
+                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          mb: 1.5,
+                        }}
+                      >
+                        <Avatar
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            fontSize: 14,
+                            fontWeight: 700,
+                            bgcolor: "primary.light",
+                            color: "primary.dark",
+                          }}
+                        >
+                          {loan.title.slice(0, 2).toUpperCase()}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="body1"
+                            fontWeight={600}
+                            color="text.primary"
+                            noWrap
+                          >
+                            {loan.title}
+                          </Typography>
+                          {loan.provider && (
+                            <Typography variant="caption">
+                              {loan.provider}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Chip
+                          label={statusLabel(loan.status)}
+                          size="small"
+                          color={statusColor(loan.status)}
+                          variant={
+                            loan.status === "done" ? "filled" : "outlined"
+                          }
+                        />
+                      </Box>
+                      <AnimatedProgress value={progress} sx={{ mb: 1 }} />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        {matchInfo ? (
+                          <>
+                            <span>
+                              {matchInfo.count} installment
+                              {matchInfo.count !== 1 ? "s" : ""} in range
+                            </span>
+                            <span>
+                              {formatCurrency(matchInfo.remaining)} due
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>
+                              {paidCount} of {loan.num_installments} paid
+                            </span>
+                            {loan.next_due_date && (
+                              <span>
+                                Next: {formatDateShort(loan.next_due_date)}
+                              </span>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Link>
-        );
-      })}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Link>
+            </StaggerItem>
+          );
+        })}
+      </StaggerContainer>
 
-      <Link href="/loans/new">
-        <Fab color="primary" sx={{ position: "fixed", bottom: 72, right: 16 }}>
-          <AddIcon />
-        </Fab>
-      </Link>
+      <PulsingFab href="/loans/new" />
+
+      {/* Filter Drawer */}
+      <Drawer
+        anchor="bottom"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            maxHeight: "85vh",
+            display: "flex",
+            flexDirection: "column",
+          },
+        }}
+      >
+        {/* Handle — fixed top */}
+        <Box sx={{ pt: 1.5, pb: 1, flexShrink: 0 }}>
+          <Box
+            sx={{
+              width: 36,
+              height: 4,
+              bgcolor: "divider",
+              borderRadius: 2,
+              mx: "auto",
+            }}
+          />
+        </Box>
+
+        {/* Header — fixed top */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: 2.5,
+            pb: 2,
+            flexShrink: 0,
+          }}
+        >
+          <Typography variant="h6">Filters</Typography>
+          <IconButton onClick={() => setDrawerOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        {/* Scrollable content */}
+        <Box sx={{ overflowY: "auto", flex: 1, px: 2.5 }}>
+          {/* Status */}
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              mb: 1.5,
+              display: "block",
+              color: "text.primary",
+              fontSize: "0.7rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Status
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+            {statuses.map((s) => (
+              <Chip
+                key={s.value}
+                label={s.label}
+                size="small"
+                variant={statusFilter === s.value ? "filled" : "outlined"}
+                color={statusFilter === s.value ? "primary" : "default"}
+                onClick={() => setStatusFilter(s.value)}
+                sx={{
+                  flex: 1,
+                  fontWeight: 600,
+                  fontSize: "0.73rem",
+                  height: 36,
+                  borderRadius: 2.5,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  ...(statusFilter === s.value && {
+                    boxShadow: "0 2px 8px rgba(13,148,136,0.3)",
+                  }),
+                  "&:hover": {
+                    transform: "translateY(-1px)",
+                  },
+                }}
+              />
+            ))}
+          </Box>
+
+          {/* Provider */}
+          {providers.length > 0 && (
+            <>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 700,
+                  mb: 1.5,
+                  display: "block",
+                  color: "text.primary",
+                  fontSize: "0.7rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Provider
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 0.75,
+                  mb: 3,
+                  mx: -2.5,
+                  px: 2.5,
+                  overflowX: "auto",
+                  scrollSnapType: "x mandatory",
+                  "&::-webkit-scrollbar": { display: "none" },
+                  // Fade edges to hint scrollability
+                  maskImage:
+                    providers.length > 4
+                      ? "linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%)"
+                      : "none",
+                }}
+              >
+                <Chip
+                  label="All"
+                  size="small"
+                  variant={providerFilter === "all" ? "filled" : "outlined"}
+                  color={providerFilter === "all" ? "primary" : "default"}
+                  onClick={() => setProviderFilter("all")}
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: "0.73rem",
+                    height: 32,
+                    flexShrink: 0,
+                    scrollSnapAlign: "start",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    "&:hover": { transform: "translateY(-1px)" },
+                  }}
+                />
+                {providers.map((p) => (
+                  <Chip
+                    key={p}
+                    label={p}
+                    size="small"
+                    variant={providerFilter === p ? "filled" : "outlined"}
+                    color={providerFilter === p ? "primary" : "default"}
+                    onClick={() => setProviderFilter(p)}
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: "0.73rem",
+                      height: 32,
+                      flexShrink: 0,
+                      scrollSnapAlign: "start",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      ...(providerFilter === p && {
+                        boxShadow: "0 2px 8px rgba(13,148,136,0.3)",
+                      }),
+                      "&:hover": { transform: "translateY(-1px)" },
+                    }}
+                  />
+                ))}
+              </Box>
+            </>
+          )}
+
+          {/* Date Range */}
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 700,
+              display: "block",
+              color: "text.primary",
+              fontSize: "0.7rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              mb: 1,
+            }}
+          >
+            Date Range
+          </Typography>
+          <Box sx={{ mb: 2, mx: -2.5 }}>
+            <DateRangeCalendar
+              startDate={dateFrom}
+              endDate={dateTo}
+              onChange={(start, end) => {
+                setDateFrom(start);
+                setDateTo(end);
+              }}
+            />
+          </Box>
+        </Box>
+
+        {/* Actions — fixed bottom */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            px: 2.5,
+            py: 2,
+            borderTop: "1px solid",
+            borderColor: "divider",
+            flexShrink: 0,
+          }}
+        >
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => {
+              clearAllFilters();
+              setDrawerOpen(false);
+            }}
+            sx={{ borderRadius: 3, py: 1.25 }}
+          >
+            Clear All
+          </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => setDrawerOpen(false)}
+            sx={{ borderRadius: 3, py: 1.25 }}
+          >
+            Apply
+          </Button>
+        </Box>
+      </Drawer>
     </>
   );
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function statusLabel(status: string): string {

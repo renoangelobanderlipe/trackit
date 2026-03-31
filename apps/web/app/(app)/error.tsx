@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -12,13 +13,14 @@ export default function AppError({
 }) {
   return (
     <Container maxWidth="xs" sx={{ py: 8, textAlign: "center" }}>
-      <Typography variant="h5" fontWeight={700} gutterBottom>
+      <ErrorOutlineIcon sx={{ fontSize: 56, color: "text.secondary", mb: 2 }} />
+      <Typography variant="h5" gutterBottom>
         Something went wrong
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <Typography variant="body2" sx={{ mb: 3 }}>
         An unexpected error occurred. Please try again.
       </Typography>
-      <Button variant="contained" onClick={reset}>
+      <Button variant="contained" onClick={reset} size="large">
         Try Again
       </Button>
     </Container>

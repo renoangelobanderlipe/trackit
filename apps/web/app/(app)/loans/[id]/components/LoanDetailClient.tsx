@@ -1,16 +1,20 @@
 "use client";
 
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import LinearProgress from "@mui/material/LinearProgress";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useState } from "react";
+import AnimatedProgress from "@/components/animations/AnimatedProgress";
+import Confetti from "@/components/animations/Confetti";
+import FadeIn from "@/components/animations/FadeIn";
+import { formatDate } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
 import DeleteLoanDialog from "./DeleteLoanDialog";
 import InstallmentList from "./InstallmentList";
@@ -24,73 +28,157 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
 
   return (
     <>
+      {loan.status === "done" && <Confetti />}
+
+      {/* Hero */}
+      <FadeIn>
+        <Card
+          sx={{
+            mb: 2.5,
+            border: "none",
+            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+            color: "white",
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                mb: 2,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Avatar
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    color: "white",
+                  }}
+                >
+                  {loan.title.slice(0, 2).toUpperCase()}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                    {loan.title}
+                  </Typography>
+                  {loan.provider && (
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.7)" }}
+                    >
+                      {loan.provider}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              <Box>
+                <Link href={`/loans/${loan.id}/edit`}>
+                  <IconButton
+                    size="small"
+                    sx={{ color: "rgba(255,255,255,0.8)" }}
+                  >
+                    <EditOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Link>
+                <IconButton
+                  onClick={() => setShowDelete(true)}
+                  size="small"
+                  sx={{ color: "rgba(255,255,255,0.8)" }}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
+
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.6)", mb: 0.5 }}
+            >
+              Total Amount
+            </Typography>
+            <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5 }}>
+              ₱{loan.total_amount}
+            </Typography>
+
+            <AnimatedProgress
+              value={progress}
+              sx={{
+                mb: 1,
+                height: 8,
+                bgcolor: "rgba(255,255,255,0.2)",
+                "& .MuiLinearProgress-bar": {
+                  bgcolor: "white",
+                },
+              }}
+            />
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "rgba(255,255,255,0.7)" }}
+              >
+                ₱{loan.total_paid} paid
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: "rgba(255,255,255,0.7)" }}
+              >
+                {Math.round(progress)}%
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </FadeIn>
+
+      {/* Info Row */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: 2,
+          gap: 1,
+          mb: 2.5,
+          flexWrap: "wrap",
         }}
       >
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            {loan.title}
-          </Typography>
-          {loan.provider && (
-            <Typography variant="body2" color="text.secondary">
-              {loan.provider}
-            </Typography>
-          )}
-          <Chip
-            label={statusLabel(loan.status)}
-            size="small"
-            color={statusColor(loan.status)}
-            variant="outlined"
-            sx={{ mt: 0.5 }}
-          />
-        </Box>
-        <Box>
-          <Link href={`/loans/${loan.id}/edit`}>
-            <IconButton size="small" sx={{ mr: 0.5 }}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Link>
-          <IconButton
-            onClick={() => setShowDelete(true)}
-            color="error"
-            size="small"
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
+        <Chip
+          label={statusLabel(loan.status)}
+          size="small"
+          color={statusColor(loan.status)}
+          variant={loan.status === "done" ? "filled" : "outlined"}
+        />
+        <Chip
+          label={loan.payment_frequency.replace(/_/g, " ")}
+          size="small"
+          variant="outlined"
+        />
+        <Chip
+          label={`Started ${formatDate(loan.start_date)}`}
+          size="small"
+          variant="outlined"
+        />
       </Box>
 
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Typography variant="body2" color="text.secondary">
-            Progress
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={Math.min(progress, 100)}
-            sx={{ my: 1, height: 8, borderRadius: 4 }}
-          />
-          <Typography variant="body2">
-            ₱{loan.total_paid} / ₱{loan.total_amount}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {loan.payment_frequency.replace("_", " ")} · Started{" "}
-            {loan.start_date}
-          </Typography>
-          {loan.notes && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+      {loan.notes && (
+        <Card sx={{ mb: 2.5 }}>
+          <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 600, mb: 0.5, display: "block" }}
+            >
+              Notes
+            </Typography>
+            <Typography variant="body2" color="text.primary">
               {loan.notes}
             </Typography>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+      {/* Installments */}
+      <Typography variant="subtitle1" sx={{ mb: 1 }}>
         Installments
       </Typography>
       <Card>

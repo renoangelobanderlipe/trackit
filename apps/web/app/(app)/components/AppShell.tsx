@@ -1,8 +1,8 @@
 "use client";
 
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import LogoutIcon from "@mui/icons-material/Logout";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import AppBar from "@mui/material/AppBar";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
@@ -26,19 +26,51 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ pb: 8 }}>
+    <Box sx={{ pb: "80px" }}>
       <AppBar
         position="sticky"
-        color="default"
         elevation={0}
-        sx={{ borderBottom: 1, borderColor: "divider" }}
+        sx={{
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
       >
-        <Toolbar>
-          <Typography variant="h6" fontWeight={700} sx={{ flexGrow: 1 }}>
-            TrackIt
-          </Typography>
-          <IconButton onClick={handleLogout} size="small" title="Logout">
-            <LogoutIcon fontSize="small" />
+        <Toolbar sx={{ px: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexGrow: 1,
+            }}
+          >
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <AccountBalanceWalletIcon sx={{ fontSize: 18, color: "white" }} />
+            </Box>
+            <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
+              TrackIt
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={handleLogout}
+            size="small"
+            sx={{
+              color: "text.secondary",
+              "&:hover": { color: "error.main" },
+            }}
+            title="Logout"
+          >
+            <LogoutRoundedIcon fontSize="small" />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -46,8 +78,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Box>{children}</Box>
 
       <Paper
-        sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1100 }}
-        elevation={3}
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1100,
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
+        elevation={0}
       >
         <BottomNavigation
           value={navValue}
@@ -55,8 +95,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             router.push(newValue === 0 ? "/dashboard" : "/loans");
           }}
           showLabels
+          sx={{ px: 2 }}
         >
-          <BottomNavigationAction label="Dashboard" icon={<DashboardIcon />} />
+          <BottomNavigationAction
+            label="Dashboard"
+            icon={<DashboardRoundedIcon />}
+          />
           <BottomNavigationAction
             label="Loans"
             icon={<AccountBalanceWalletIcon />}
