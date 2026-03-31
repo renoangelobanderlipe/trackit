@@ -1,19 +1,32 @@
 "use client";
 
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
+import Collapse from "@mui/material/Collapse";
+import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createLoan } from "@/app/actions/loans";
+import { formatCurrency } from "@/lib/format";
 
 const frequencies = [
   { value: "monthly", label: "Monthly" },
   { value: "twice_a_month", label: "Twice a Month" },
   { value: "biweekly", label: "Biweekly" },
   { value: "weekly", label: "Weekly" },
+];
+
+const statusOptions = [
+  { value: "not_started", label: "Not Started" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "done", label: "Done" },
 ];
 
 export default function LoanForm() {
@@ -31,7 +44,6 @@ export default function LoanForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
 
-  // Compute installment preview
   const amount = Number.parseFloat(totalAmount) || 0;
   const count = Number.parseInt(numInstallments) || 0;
   const perInstallment = count > 0 ? amount / count : 0;
@@ -67,6 +79,8 @@ export default function LoanForm() {
 
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate>
+      {/* Section: Loan Info */}
+      <SectionLabel label="Loan Details" />
       <TextField
         label="Loan Title"
         fullWidth
@@ -82,8 +96,12 @@ export default function LoanForm() {
         value={provider}
         onChange={(e) => setProvider(e.target.value)}
         placeholder="e.g., Billease, Home Credit"
+        helperText="Optional — the lending company"
         sx={{ mb: 2 }}
       />
+
+      {/* Section: Payment */}
+      <SectionLabel label="Payment Setup" />
       <TextField
         label="Total Amount"
         type="number"
@@ -91,75 +109,167 @@ export default function LoanForm() {
         required
         value={totalAmount}
         onChange={(e) => setTotalAmount(e.target.value)}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 700, color: "text.primary" }}
+                >
+                  ₱
+                </Typography>
+              </InputAdornment>
+            ),
+          },
+        }}
         sx={{ mb: 2 }}
       />
-      <TextField
-        label="Number of Installments"
-        type="number"
-        fullWidth
-        required
-        value={numInstallments}
-        onChange={(e) => setNumInstallments(e.target.value)}
-        sx={{ mb: 2 }}
-      />
-      <TextField
-        label="Payment Frequency"
-        select
-        fullWidth
-        value={frequency}
-        onChange={(e) => setFrequency(e.target.value)}
-        sx={{ mb: 2 }}
-      >
-        {frequencies.map((f) => (
-          <MenuItem key={f.value} value={f.value}>
-            {f.label}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+        <TextField
+          label="Installments"
+          type="number"
+          fullWidth
+          required
+          value={numInstallments}
+          onChange={(e) => setNumInstallments(e.target.value)}
+          placeholder="e.g., 6"
+        />
+        <TextField
+          label="Frequency"
+          select
+          fullWidth
+          value={frequency}
+          onChange={(e) => setFrequency(e.target.value)}
+        >
+          {frequencies.map((f) => (
+            <MenuItem key={f.value} value={f.value}>
+              {f.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Box>
 
-      {frequency === "twice_a_month" && (
-        <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+      <Collapse in={frequency === "twice_a_month"}>
+        <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
           <TextField
-            label="First Due Day"
+            label="1st Due Day"
             type="number"
             fullWidth
             value={dueDay1}
             onChange={(e) => setDueDay1(e.target.value)}
             slotProps={{ htmlInput: { min: 1, max: 31 } }}
+            helperText="Day of month"
           />
           <TextField
-            label="Second Due Day"
+            label="2nd Due Day"
             type="number"
             fullWidth
             value={dueDay2}
             onChange={(e) => setDueDay2(e.target.value)}
             slotProps={{ htmlInput: { min: 1, max: 31 } }}
+            helperText="Day of month"
           />
         </Box>
-      )}
+      </Collapse>
 
-      <TextField
+      {/* Preview */}
+      <Collapse in={count > 0 && amount > 0}>
+        <Box
+          sx={{
+            mb: 2,
+            p: 2,
+            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+            borderRadius: 3,
+            color: "white",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.6)",
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Per Installment
+            </Typography>
+            <Typography sx={{ fontWeight: 800, fontSize: "1.25rem" }}>
+              {formatCurrency(perInstallment)}
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "right" }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.6)",
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Total
+            </Typography>
+            <Typography sx={{ fontWeight: 600, fontSize: "0.85rem" }}>
+              {count} payments · {formatCurrency(amount)}
+            </Typography>
+          </Box>
+        </Box>
+      </Collapse>
+
+      {/* Section: Schedule */}
+      <SectionLabel label="Schedule & Status" />
+      <DatePicker
         label="Start Date"
-        type="date"
-        fullWidth
-        required
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        slotProps={{ inputLabel: { shrink: true } }}
-        sx={{ mb: 2 }}
+        value={startDate ? dayjs(startDate) : null}
+        onChange={(val) => setStartDate(val ? val.format("YYYY-MM-DD") : "")}
+        sx={{ mb: 2, width: "100%" }}
       />
-      <TextField
-        label="Status"
-        select
-        fullWidth
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        sx={{ mb: 2 }}
+
+      {/* Status chips */}
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 600,
+          mb: 1,
+          display: "block",
+          color: "text.secondary",
+          fontSize: "0.7rem",
+        }}
       >
-        <MenuItem value="not_started">Not Started</MenuItem>
-        <MenuItem value="in_progress">In Progress</MenuItem>
-        <MenuItem value="done">Done</MenuItem>
-      </TextField>
+        Status
+      </Typography>
+      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+        {statusOptions.map((s) => (
+          <Chip
+            key={s.value}
+            label={s.label}
+            size="small"
+            variant={status === s.value ? "filled" : "outlined"}
+            color={status === s.value ? "primary" : "default"}
+            onClick={() => setStatus(s.value)}
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              fontSize: "0.73rem",
+              height: 34,
+              borderRadius: 2,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              ...(status === s.value && {
+                boxShadow: "0 2px 8px rgba(13,148,136,0.3)",
+              }),
+              "&:hover": { transform: "translateY(-1px)" },
+            }}
+          />
+        ))}
+      </Box>
+
       <TextField
         label="Notes"
         fullWidth
@@ -167,40 +277,14 @@ export default function LoanForm() {
         rows={2}
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        sx={{ mb: 2 }}
+        placeholder="Optional notes about this loan"
+        sx={{ mb: 3 }}
       />
 
-      {count > 0 && amount > 0 && (
-        <Box
-          sx={{
-            mb: 2,
-            p: 2.5,
-            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
-            borderRadius: 3,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="caption" sx={{ fontWeight: 600 }}>
-            Installment Preview
-          </Typography>
-          <Typography
-            variant="h5"
-            fontWeight={800}
-            color="primary.main"
-            sx={{ my: 0.5 }}
-          >
-            ₱{perInstallment.toFixed(2)}
-          </Typography>
-          <Typography variant="caption">
-            {count} payments · {frequency.replace(/_/g, " ")}
-          </Typography>
-        </Box>
-      )}
-
       {error && (
-        <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>
           {error}
-        </Typography>
+        </Alert>
       )}
 
       <Button
@@ -208,10 +292,32 @@ export default function LoanForm() {
         variant="contained"
         fullWidth
         size="large"
-        disabled={loading}
+        disabled={
+          loading || !title || !totalAmount || !numInstallments || !startDate
+        }
       >
         {loading ? "Creating..." : "Create Loan"}
       </Button>
     </Box>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <Typography
+      variant="caption"
+      sx={{
+        fontWeight: 700,
+        fontSize: "0.65rem",
+        textTransform: "uppercase",
+        letterSpacing: "0.1em",
+        color: "text.secondary",
+        display: "block",
+        mb: 1.5,
+        mt: 1,
+      }}
+    >
+      {label}
+    </Typography>
   );
 }

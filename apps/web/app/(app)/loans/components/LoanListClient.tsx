@@ -3,7 +3,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import Avatar from "@mui/material/Avatar";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -14,6 +13,8 @@ import Chip from "@mui/material/Chip";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 import AnimatedProgress from "@/components/animations/AnimatedProgress";
@@ -25,7 +26,6 @@ import {
 } from "@/components/animations/StaggerList";
 import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
-import DateRangeCalendar from "./DateRangeCalendar";
 
 const statuses = [
   { value: "all", label: "All" },
@@ -236,84 +236,89 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
                 href={`/loans/${loan.id}`}
                 style={{ textDecoration: "none" }}
               >
-                <Card sx={{ mb: 1.5 }}>
+                <Card sx={{ mb: 1 }}>
                   <CardActionArea sx={{ borderRadius: 4 }}>
-                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1.5,
-                          mb: 1.5,
-                        }}
-                      >
-                        <Avatar
+                    <CardContent
+                      sx={{ px: 2, py: 1.5, "&:last-child": { pb: 1.5 } }}
+                    >
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box
                           sx={{
-                            width: 40,
-                            height: 40,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            bgcolor: "primary.light",
-                            color: "primary.dark",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 0.5,
                           }}
                         >
-                          {loan.title.slice(0, 2).toUpperCase()}
-                        </Avatar>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography
-                            variant="body1"
+                            variant="body2"
                             fontWeight={600}
                             color="text.primary"
                             noWrap
+                            sx={{ fontSize: "0.85rem" }}
                           >
                             {loan.title}
                           </Typography>
+                          <Chip
+                            label={statusLabel(loan.status)}
+                            size="small"
+                            color={statusColor(loan.status)}
+                            variant={
+                              loan.status === "done" ? "filled" : "outlined"
+                            }
+                            sx={{
+                              height: 20,
+                              fontSize: "0.6rem",
+                              flexShrink: 0,
+                              "& .MuiChip-label": { px: 0.75 },
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 0.25,
+                          }}
+                        >
                           {loan.provider && (
-                            <Typography variant="caption">
+                            <Typography
+                              variant="caption"
+                              sx={{ fontSize: "0.68rem", flexShrink: 0 }}
+                            >
                               {loan.provider}
                             </Typography>
                           )}
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontSize: "0.68rem",
+                              color: "text.disabled",
+                            }}
+                          >
+                            {matchInfo
+                              ? `${matchInfo.count} in range · ${formatCurrency(matchInfo.remaining)}`
+                              : `${paidCount}/${loan.num_installments} paid`}
+                          </Typography>
+                          {!matchInfo && loan.next_due_date && (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontSize: "0.68rem",
+                                color: "text.disabled",
+                                ml: "auto",
+                              }}
+                            >
+                              {formatDateShort(loan.next_due_date)}
+                            </Typography>
+                          )}
                         </Box>
-                        <Chip
-                          label={statusLabel(loan.status)}
-                          size="small"
-                          color={statusColor(loan.status)}
-                          variant={
-                            loan.status === "done" ? "filled" : "outlined"
-                          }
+                        <AnimatedProgress
+                          value={progress}
+                          sx={{ mt: 0.75, height: 4 }}
                         />
                       </Box>
-                      <AnimatedProgress value={progress} sx={{ mb: 1 }} />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        {matchInfo ? (
-                          <>
-                            <span>
-                              {matchInfo.count} installment
-                              {matchInfo.count !== 1 ? "s" : ""} in range
-                            </span>
-                            <span>
-                              {formatCurrency(matchInfo.remaining)} due
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span>
-                              {paidCount} of {loan.num_installments} paid
-                            </span>
-                            {loan.next_due_date && (
-                              <span>
-                                Next: {formatDateShort(loan.next_due_date)}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </Typography>
                     </CardContent>
                   </CardActionArea>
                 </Card>
@@ -508,14 +513,21 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
           >
             Date Range
           </Typography>
-          <Box sx={{ mb: 2, mx: -2.5 }}>
-            <DateRangeCalendar
-              startDate={dateFrom}
-              endDate={dateTo}
-              onChange={(start, end) => {
-                setDateFrom(start);
-                setDateTo(end);
-              }}
+          <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+            <DatePicker
+              label="From"
+              value={dateFrom ? dayjs(dateFrom) : null}
+              onChange={(val) =>
+                setDateFrom(val ? val.format("YYYY-MM-DD") : "")
+              }
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
+            />
+            <DatePicker
+              label="To"
+              value={dateTo ? dayjs(dateTo) : null}
+              onChange={(val) => setDateTo(val ? val.format("YYYY-MM-DD") : "")}
+              minDate={dateFrom ? dayjs(dateFrom) : undefined}
+              slotProps={{ textField: { size: "small", fullWidth: true } }}
             />
           </Box>
         </Box>

@@ -9,7 +9,9 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import confetti from "canvas-confetti";
+import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { markInstallmentPaid } from "@/app/actions/installments";
@@ -111,14 +113,11 @@ export default function PaymentDialog({ installment, open, onClose }: Props) {
           onChange={(e) => setAmount(e.target.value)}
           sx={{ mb: 2 }}
         />
-        <TextField
+        <DatePicker
           label="Date Paid"
-          type="date"
-          fullWidth
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ mb: 2 }}
+          value={dayjs(date)}
+          onChange={(val) => setDate(val ? val.format("YYYY-MM-DD") : "")}
+          sx={{ mb: 2, width: "100%" }}
         />
         <TextField
           label="Notes"

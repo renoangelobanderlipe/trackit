@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 import type { Installment } from "@/lib/types";
 import PaymentDialog from "./PaymentDialog";
 
@@ -21,11 +21,14 @@ export default function InstallmentList({
 
   return (
     <>
-      <Box sx={{ p: 0.5 }}>
+      <Box>
         {installments.map((inst, idx) => {
           const isPaid = inst.status === "paid";
           const isOverdue = inst.is_overdue;
           const isPartial = inst.status === "partial";
+          const remaining =
+            Number.parseFloat(inst.amount) -
+            Number.parseFloat(inst.paid_amount);
 
           return (
             <Box
@@ -33,24 +36,26 @@ export default function InstallmentList({
               sx={{
                 display: "flex",
                 gap: 1.5,
-                px: 1.5,
-                py: 1.5,
+                px: 2,
+                py: 1.75,
                 borderBottom:
                   idx < installments.length - 1 ? "1px solid" : "none",
                 borderColor: "divider",
-                alignItems: "flex-start",
+                alignItems: "center",
+                transition: "background-color 0.15s ease",
+                "&:hover": { bgcolor: "rgba(0,0,0,0.01)" },
               }}
             >
               {/* Timeline dot */}
-              <Box sx={{ pt: 0.3 }}>
+              <Box sx={{ flexShrink: 0 }}>
                 {isPaid ? (
                   <CheckCircleIcon
-                    sx={{ fontSize: 22, color: "success.main" }}
+                    sx={{ fontSize: 24, color: "success.main" }}
                   />
                 ) : (
                   <RadioButtonUncheckedIcon
                     sx={{
-                      fontSize: 22,
+                      fontSize: 24,
                       color: isOverdue
                         ? "error.main"
                         : isPartial
@@ -63,11 +68,12 @@ export default function InstallmentList({
 
               {/* Content */}
               <Box sx={{ flex: 1, minWidth: 0 }}>
+                {/* Row 1: Label + Amount */}
                 <Box
                   sx={{
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    alignItems: "baseline",
+                    gap: 0.75,
                     mb: 0.25,
                   }}
                 >
@@ -75,42 +81,87 @@ export default function InstallmentList({
                     variant="body2"
                     fontWeight={600}
                     color="text.primary"
+                    sx={{ flexShrink: 0 }}
                   >
-                    {inst.label} — ₱{inst.amount}
+                    {inst.label}
                   </Typography>
+                  <Typography
+                    variant="body2"
+                    fontWeight={700}
+                    color="text.primary"
+                  >
+                    {formatCurrency(inst.amount)}
+                  </Typography>
+                </Box>
+
+                {/* Row 2: Status info */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                  }}
+                >
                   <Chip
                     label={isOverdue ? "Overdue" : statusLabel(inst.status)}
                     size="small"
                     color={isOverdue ? "error" : statusChipColor(inst.status)}
                     variant={isPaid || isOverdue ? "filled" : "outlined"}
-                    sx={{ height: 22, fontSize: "0.65rem" }}
+                    sx={{
+                      height: 20,
+                      fontSize: "0.6rem",
+                      fontWeight: 700,
+                      "& .MuiChip-label": { px: 1 },
+                    }}
                   />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    noWrap
+                    sx={{ fontSize: "0.7rem" }}
+                  >
+                    {isPaid
+                      ? `Paid ${inst.paid_date ? formatDate(inst.paid_date) : ""}`
+                      : isPartial
+                        ? `${formatCurrency(inst.paid_amount)} paid · ${formatCurrency(remaining)} left`
+                        : formatDate(inst.due_date)}
+                  </Typography>
                 </Box>
-                <Typography variant="caption">
-                  {isPaid
-                    ? `Paid ₱${inst.paid_amount} on ${inst.paid_date ? formatDate(inst.paid_date) : "—"}`
-                    : isPartial
-                      ? `₱${inst.paid_amount} paid · ₱${(Number.parseFloat(inst.amount) - Number.parseFloat(inst.paid_amount)).toFixed(2)} remaining`
-                      : `Due ${formatDate(inst.due_date)}`}
-                </Typography>
               </Box>
 
               {/* Action */}
-              {!isPaid && (
+              {!isPaid ? (
                 <Button
                   size="small"
-                  variant="outlined"
+                  variant="contained"
                   onClick={() => setSelectedInstallment(inst)}
                   sx={{
                     minWidth: 0,
-                    px: 1.5,
+                    px: 2,
                     py: 0.5,
                     fontSize: "0.7rem",
+                    fontWeight: 700,
                     borderRadius: 2,
+                    flexShrink: 0,
+                    textTransform: "none",
+                    boxShadow: "none",
+                    "&:hover": { boxShadow: "0 2px 8px rgba(13,148,136,0.3)" },
                   }}
                 >
                   Pay
                 </Button>
+              ) : (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "success.main",
+                    fontWeight: 700,
+                    fontSize: "0.65rem",
+                    flexShrink: 0,
+                  }}
+                >
+                  Paid
+                </Typography>
               )}
             </Box>
           );

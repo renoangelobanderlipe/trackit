@@ -1,4 +1,5 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -8,18 +9,16 @@ import LoanForm from "../components/LoanForm";
 export default function NewLoanPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
-      <Typography
-        variant="h5"
-        fontWeight={700}
-        gutterBottom
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         <Link href="/loans">
           <IconButton size="small">
             <ArrowBackIcon />
           </IconButton>
         </Link>
-        New Loan
+        <Typography variant="h5">New Loan</Typography>
+      </Box>
+      <Typography variant="body2" sx={{ mb: 3, pl: 5.5 }}>
+        Set up your loan details and payment schedule.
       </Typography>
       <LoanForm />
     </Container>
