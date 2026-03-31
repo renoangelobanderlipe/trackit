@@ -18,6 +18,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 import TiLogo from "@/components/TiLogo";
 
+const NAV_HEIGHT = 64;
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -32,19 +34,28 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <Box
       sx={{
-        pb: "calc(64px + env(safe-area-inset-bottom, 0px))",
+        pb: `calc(${NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))`,
       }}
     >
+      {/*
+        iOS pattern: AppBar background bleeds into safe area (behind status bar).
+        Toolbar content stays below the safe area via padding-top.
+      */}
       <AppBar
         position="sticky"
         elevation={0}
         sx={{
           borderBottom: "1px solid",
           borderColor: "divider",
-          pt: "env(safe-area-inset-top, 0px)",
         }}
       >
-        <Toolbar sx={{ px: 2, minHeight: { xs: 56 } }}>
+        <Toolbar
+          sx={{
+            px: 2,
+            minHeight: 56,
+            pt: "env(safe-area-inset-top, 0px)",
+          }}
+        >
           <Box
             sx={{
               display: "flex",
@@ -75,6 +86,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {children}
 
+      {/*
+        iOS pattern: Bottom nav background extends behind home indicator.
+        Nav items sit above the safe area via padding-bottom on the container.
+      */}
       <Paper
         sx={{
           position: "fixed",
@@ -96,7 +111,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           showLabels
           sx={{
             px: 2,
-            height: 64,
+            height: NAV_HEIGHT,
             "& .MuiBottomNavigationAction-root": {
               "&:active": { transform: "scale(0.92)" },
               transition: "transform 0.1s ease",

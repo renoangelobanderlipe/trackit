@@ -3,10 +3,6 @@
   --foreground: #0f172a;
   --gradient-primary: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   --gradient-card: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 @media (prefers-color-scheme: dark) {
