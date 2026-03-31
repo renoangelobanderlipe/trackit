@@ -1,4 +1,5 @@
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
@@ -12,7 +13,7 @@ export default function NewLoanPage() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         <Link href="/loans">
           <IconButton size="small">
-            <ArrowBackIcon />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
           </IconButton>
         </Link>
         <Typography variant="h5">New Loan</Typography>

@@ -1,8 +1,11 @@
 "use client";
 
-import CloseIcon from "@mui/icons-material/Close";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import {
+  Cancel01Icon,
+  FilterHorizontalIcon,
+  Invoice01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -119,7 +122,7 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
             color="primary"
             invisible={activeFilterCount === 0}
           >
-            <FilterListIcon />
+            <HugeiconsIcon icon={FilterHorizontalIcon} size={20} />
           </Badge>
         </IconButton>
       </Box>
@@ -191,8 +194,11 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
       {filtered.length === 0 && !rangeSummary && (
         <Card sx={{ mt: 2 }}>
           <CardContent sx={{ textAlign: "center", py: 6 }}>
-            <ReceiptLongIcon
-              sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
+            <HugeiconsIcon
+              icon={Invoice01Icon}
+              size={48}
+              color="var(--mui-palette-text-secondary)"
+              style={{ marginBottom: 8 }}
             />
             <Typography variant="body1" fontWeight={600} gutterBottom>
               {activeFilterCount > 0 ? "No matching loans" : "No loans yet"}
@@ -371,7 +377,7 @@ export default function LoanListClient({ loans }: { loans: LoanDetail[] }) {
         >
           <Typography variant="h6">Filters</Typography>
           <IconButton onClick={() => setDrawerOpen(false)} size="small">
-            <CloseIcon />
+            <HugeiconsIcon icon={Cancel01Icon} size={20} />
           </IconButton>
         </Box>
 

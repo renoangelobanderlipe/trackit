@@ -1,7 +1,7 @@
 "use client";
 
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { Delete01Icon, PencilEdit01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -94,7 +94,7 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
                     size="small"
                     sx={{ color: "rgba(255,255,255,0.8)" }}
                   >
-                    <EditOutlinedIcon sx={{ fontSize: 16 }} />
+                    <HugeiconsIcon icon={PencilEdit01Icon} size={16} />
                   </IconButton>
                 </Link>
                 <IconButton
@@ -105,7 +105,7 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
                     "&:hover": { color: "#fca5a5" },
                   }}
                 >
-                  <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+                  <HugeiconsIcon icon={Delete01Icon} size={16} />
                 </IconButton>
               </Box>
             </Box>

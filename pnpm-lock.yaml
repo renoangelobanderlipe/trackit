@@ -44,9 +44,12 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
-      '@mui/icons-material':
-        specifier: ^7.3.9
-        version: 7.3.9(@mui/material@7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
+      '@hugeicons/core-free-icons':
+        specifier: ^4.1.1
+        version: 4.1.1
+      '@hugeicons/react':
+        specifier: ^1.1.6
+        version: 1.1.6(react@19.2.4)
       '@mui/material':
         specifier: ^7.3.9
         version: 7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -261,6 +264,14 @@ packages:
   '@emotion/weak-memoize@0.4.0':
     resolution: {integrity: sha512-snKqtPW01tN0ui7yu9rGv69aJXr/a/Ywvl11sUjNtEcRc+ng/mQriFL0wLXMef74iHa/EkftbDzU9F8iFbH+zg==}
 
+  '@hugeicons/core-free-icons@4.1.1':
+    resolution: {integrity: sha512-teqIBvPHl90ygIwKyJwTxOH8aNp1X1PjDTcMvLkEwdPxPD+8mssrZ5kXKIAJJFYPsz69a8LYQY0UPid4PAdavg==}
+
+  '@hugeicons/react@1.1.6':
+    resolution: {integrity: sha512-c2LhXJMAW5wN1pC/smBXG0YPqUON6ceR/ZdXHCjEI9KvB+hjtqYjmzIxok5hAQOeXGz0WtORgCQMzqewFKAZwg==}
+    peerDependencies:
+      react: '>=16.0.0'
+
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
     engines: {node: '>=18'}
@@ -432,17 +443,6 @@ packages:
 
   '@mui/core-downloads-tracker@7.3.9':
     resolution: {integrity: sha512-MOkOCTfbMJwLshlBCKJ59V2F/uaLYfmKnN76kksj6jlGUVdI25A9Hzs08m+zjBRdLv+sK7Rqdsefe8X7h/6PCw==}
-
-  '@mui/icons-material@7.3.9':
-    resolution: {integrity: sha512-BT+zPJXss8Hg/oEMRmHl17Q97bPACG4ufFSfGEdhiE96jOyR5Dz1ty7ZWt1fVGR0y1p+sSgEwQT/MNZQmoWDCw==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      '@mui/material': ^7.3.9
-      '@types/react': ^17.0.0 || ^18.0.0 || ^19.0.0
-      react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   '@mui/material-nextjs@7.3.9':
     resolution: {integrity: sha512-ahCIvEhRnX4/xznSr/bn6cLzPppcLohfVc65k7AFAIDazWMGo9yVCCSdL7fqvwluDTZiIyqnweb30xOZMTeyRg==}
@@ -1720,6 +1720,12 @@ snapshots:
 
   '@emotion/weak-memoize@0.4.0': {}
 
+  '@hugeicons/core-free-icons@4.1.1': {}
+
+  '@hugeicons/react@1.1.6(react@19.2.4)':
+    dependencies:
+      react: 19.2.4
+
   '@img/colour@1.1.0':
     optional: true
 
@@ -1837,14 +1843,6 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@mui/core-downloads-tracker@7.3.9': {}
-
-  '@mui/icons-material@7.3.9(@mui/material@7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)':
-    dependencies:
-      '@babel/runtime': 7.29.2
-      '@mui/material': 7.3.9(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      react: 19.2.4
-    optionalDependencies:
-      '@types/react': 19.2.14
 
   '@mui/material-nextjs@7.3.9(@emotion/cache@11.14.0)(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(next@16.2.1(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)':
     dependencies:

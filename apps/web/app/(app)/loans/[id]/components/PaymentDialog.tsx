@@ -1,6 +1,7 @@
 "use client";
 
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
@@ -71,8 +72,11 @@ export default function PaymentDialog({ installment, open, onClose }: Props) {
     return (
       <Dialog open={open} fullWidth maxWidth="xs">
         <DialogContent sx={{ textAlign: "center", py: 5 }}>
-          <CheckCircleOutlineIcon
-            sx={{ fontSize: 64, color: "success.main", mb: 1 }}
+          <HugeiconsIcon
+            icon={CheckmarkCircle02Icon}
+            size={64}
+            color="var(--mui-palette-success-main)"
+            style={{ marginBottom: 8 }}
           />
           <Typography variant="h6" fontWeight={700}>
             {isFullPayment ? "Fully Paid!" : "Payment Recorded"}

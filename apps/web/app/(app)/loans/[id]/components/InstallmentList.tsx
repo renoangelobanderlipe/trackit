@@ -1,7 +1,10 @@
 "use client";
 
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
+import {
+  CheckmarkCircle02Icon,
+  RecordIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
@@ -49,19 +52,22 @@ export default function InstallmentList({
               {/* Timeline dot */}
               <Box sx={{ flexShrink: 0 }}>
                 {isPaid ? (
-                  <CheckCircleIcon
-                    sx={{ fontSize: 24, color: "success.main" }}
+                  <HugeiconsIcon
+                    icon={CheckmarkCircle02Icon}
+                    size={22}
+                    color="var(--mui-palette-success-main)"
                   />
                 ) : (
-                  <RadioButtonUncheckedIcon
-                    sx={{
-                      fontSize: 24,
-                      color: isOverdue
-                        ? "error.main"
+                  <HugeiconsIcon
+                    icon={RecordIcon}
+                    size={22}
+                    color={
+                      isOverdue
+                        ? "var(--mui-palette-error-main)"
                         : isPartial
-                          ? "warning.main"
-                          : "divider",
-                    }}
+                          ? "var(--mui-palette-warning-main)"
+                          : "var(--mui-palette-divider)"
+                    }
                   />
                 )}
               </Box>

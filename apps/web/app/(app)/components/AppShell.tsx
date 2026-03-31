@@ -1,8 +1,11 @@
 "use client";
 
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import {
+  DashboardSquare02Icon,
+  Logout01Icon,
+  Wallet01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import AppBar from "@mui/material/AppBar";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
@@ -56,7 +59,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               "&:hover": { color: "error.main" },
             }}
           >
-            <LogoutRoundedIcon fontSize="small" />
+            <HugeiconsIcon icon={Logout01Icon} size={18} />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -85,11 +88,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         >
           <BottomNavigationAction
             label="Dashboard"
-            icon={<DashboardRoundedIcon />}
+            icon={<HugeiconsIcon icon={DashboardSquare02Icon} size={22} />}
           />
           <BottomNavigationAction
             label="Loans"
-            icon={<AccountBalanceWalletIcon />}
+            icon={<HugeiconsIcon icon={Wallet01Icon} size={22} />}
           />
         </BottomNavigation>
       </Paper>

@@ -1,4 +1,5 @@
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -32,7 +33,7 @@ export default async function EditLoanPage({
       >
         <Link href={`/loans/${id}`}>
           <IconButton size="small">
-            <ArrowBackIcon />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
           </IconButton>
         </Link>
         Edit Loan

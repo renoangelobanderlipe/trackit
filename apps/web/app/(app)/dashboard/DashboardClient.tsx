@@ -1,7 +1,7 @@
 "use client";
 
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { ArrowRight01Icon, Invoice01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
@@ -279,7 +279,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                   }}
                 >
                   View all
-                  <ArrowForwardIosIcon sx={{ fontSize: 10 }} />
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={12} />
                 </Typography>
               </Link>
             </Box>
@@ -396,8 +396,10 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
         <FadeIn delay={0.2}>
           <Card sx={{ mt: 2 }}>
             <CardContent sx={{ textAlign: "center", py: 6 }}>
-              <AccountBalanceIcon
-                sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
+              <HugeiconsIcon
+                icon={Invoice01Icon}
+                size={48}
+                color="var(--mui-palette-text-secondary)"
               />
               <Typography variant="body1" fontWeight={600} gutterBottom>
                 No active loans

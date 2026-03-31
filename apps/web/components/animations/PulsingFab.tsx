@@ -1,6 +1,7 @@
 "use client";
 
-import AddIcon from "@mui/icons-material/Add";
+import { Add01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Fab from "@mui/material/Fab";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export default function PulsingFab({ href }: { href: string }) {
         style={{ borderRadius: 16 }}
       >
         <Fab color="primary">
-          <AddIcon />
+          <HugeiconsIcon icon={Add01Icon} size={24} />
         </Fab>
       </motion.div>
     </Link>

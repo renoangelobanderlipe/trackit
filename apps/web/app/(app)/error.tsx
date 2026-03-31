@@ -1,6 +1,7 @@
 "use client";
 
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { AlertCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
@@ -13,7 +14,12 @@ export default function AppError({
 }) {
   return (
     <Container maxWidth="xs" sx={{ py: 8, textAlign: "center" }}>
-      <ErrorOutlineIcon sx={{ fontSize: 56, color: "text.secondary", mb: 2 }} />
+      <HugeiconsIcon
+        icon={AlertCircleIcon}
+        size={56}
+        color="var(--mui-palette-text-secondary)"
+        style={{ marginBottom: 16 }}
+      />
       <Typography variant="h5" gutterBottom>
         Something went wrong
       </Typography>

@@ -1,4 +1,5 @@
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -19,7 +20,7 @@ export default async function LoanDetailPage({
       <Container maxWidth="sm" sx={{ py: 3 }}>
         <Link href="/loans">
           <IconButton size="small">
-            <ArrowBackIcon />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
           </IconButton>
         </Link>
         <Typography color="error" sx={{ mt: 1 }}>
@@ -33,7 +34,7 @@ export default async function LoanDetailPage({
     <Container maxWidth="sm" sx={{ py: 3 }}>
       <Link href="/loans">
         <IconButton size="small" sx={{ mb: 1 }}>
-          <ArrowBackIcon />
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={20} />
         </IconButton>
       </Link>
       <LoanDetailClient loan={result.data.data} />
