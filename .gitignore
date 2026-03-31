@@ -27,6 +27,16 @@ apps/server/.env
 apps/server/.env.backup
 apps/server/.phpunit.cache
 
+# node_modules (all workspaces)
+node_modules
+
+# claude/mcp
+.claude/
+.mcp.json
+
+# laravel cache data
+apps/server/storage/framework/cache/data/
+
 # misc
 .DS_Store
 *.pem
