@@ -1,13 +1,16 @@
 {
+  "id": "/",
   "name": "TrackIt",
   "short_name": "TrackIt",
   "description": "Track your loans, payment schedules, and balances in one place.",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#f8fafc",
   "theme_color": "#0d9488",
   "orientation": "portrait",
   "scope": "/",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/favicon-16x16.png",
@@ -39,20 +42,22 @@
     }
   ],
   "categories": ["finance", "productivity"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Dashboard",
+      "short_name": "Dashboard",
       "url": "/dashboard",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "My Loans",
+      "short_name": "Loans",
       "url": "/loans",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "New Loan",
+      "short_name": "New",
       "url": "/loans/new",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }

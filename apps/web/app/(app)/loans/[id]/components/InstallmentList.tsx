@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  CheckmarkCircle02Icon,
-  RecordIcon,
-} from "@hugeicons/core-free-icons";
+import { CheckmarkCircle02Icon, RecordIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";

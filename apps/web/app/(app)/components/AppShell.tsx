@@ -30,13 +30,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ pb: "80px" }}>
+    <Box
+      sx={{
+        // Bottom padding = nav height + safe area
+        pb: "calc(64px + var(--safe-bottom, 0px) + 16px)",
+      }}
+    >
       <AppBar
         position="sticky"
         elevation={0}
-        sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+        sx={{
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          // Extend into safe area on standalone iOS
+          pt: "var(--safe-top, 0px)",
+        }}
       >
-        <Toolbar sx={{ px: 2 }}>
+        <Toolbar sx={{ px: 2, minHeight: { xs: 56 } }}>
           <Box
             sx={{
               display: "flex",
@@ -57,6 +67,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             sx={{
               color: "text.secondary",
               "&:hover": { color: "error.main" },
+              "&:active": { transform: "scale(0.9)" },
             }}
           >
             <HugeiconsIcon icon={Logout01Icon} size={18} />
@@ -75,6 +86,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           zIndex: 1100,
           borderTop: "1px solid",
           borderColor: "divider",
+          // Extend into home indicator safe area
+          pb: "var(--safe-bottom, 0px)",
         }}
         elevation={0}
       >
@@ -84,7 +97,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             router.push(newValue === 0 ? "/dashboard" : "/loans");
           }}
           showLabels
-          sx={{ px: 2 }}
+          sx={{
+            px: 2,
+            height: 64,
+            "& .MuiBottomNavigationAction-root": {
+              "&:active": { transform: "scale(0.92)" },
+              transition: "transform 0.1s ease",
+            },
+          }}
         >
           <BottomNavigationAction
             label="Dashboard"

@@ -3,6 +3,10 @@
   --foreground: #0f172a;
   --gradient-primary: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   --gradient-card: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +29,9 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
+  /* Prevent overscroll/bounce on iOS */
+  overscroll-behavior: none;
 }
 
 body {
@@ -33,25 +40,104 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent overscroll bounce */
+  overscroll-behavior-y: none;
+  /* Use dynamic viewport for iOS */
+  min-height: 100dvh;
+  /* Prevent pull-to-refresh in standalone */
+  overflow-x: hidden;
 }
 
-/* Smooth transitions for theme changes */
+/* ── iOS / Mobile app-like behavior ── */
+
+/* Prevent tap highlight flash */
 * {
-  transition-property: background-color, border-color;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on nav/buttons (keep on content) */
+button,
+[role="button"],
+nav,
+[role="navigation"],
+.MuiBottomNavigation-root,
+.MuiAppBar-root,
+.MuiToolbar-root,
+.MuiFab-root,
+.MuiChip-root {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent double-tap zoom on all interactive elements */
+button,
+a,
+[role="button"],
+.MuiButtonBase-root,
+.MuiIconButton-root {
+  touch-action: manipulation;
+}
+
+/* Prevent iOS input zoom — inputs must be >= 16px */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* ── Standalone mode (Add to Home Screen) ── */
+@media (display-mode: standalone) {
+  /* Prevent pull-to-refresh */
+  html {
+    overflow: hidden;
+  }
+
+  body {
+    overflow: auto;
+    /* iOS standalone has no safe area chrome */
+    padding-top: var(--safe-top);
+  }
+}
+
+/* ── Scrollbar ── */
+
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Minimal scrollbar on desktop */
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+}
+
+/* ── Smooth transitions ── */
+* {
+  transition-property: background-color, border-color, color, opacity;
   transition-duration: 0.15s;
   transition-timing-function: ease;
 }
 
-/* Hide scrollbar but keep functionality */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 99px;
+/* Disable transitions on scroll/resize to prevent jank */
+.no-transition * {
+  transition: none !important;
 }

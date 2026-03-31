@@ -26,10 +26,19 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "TrackIt",
   },
+  formatDetection: {
+    telephone: false,
+    date: false,
+    email: false,
+    address: false,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d9488",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0d9488" },
+    { media: "(prefers-color-scheme: dark)", color: "#080f0e" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

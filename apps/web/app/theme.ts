@@ -75,9 +75,12 @@ const theme = createTheme({
         root: {
           borderRadius: 16,
           border: "1px solid #e2e8f0",
-          transition: "box-shadow 0.2s ease, transform 0.2s ease",
+          transition: "box-shadow 0.2s ease, transform 0.15s ease",
           "&:hover": {
             boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          },
+          "&:active": {
+            transform: "scale(0.98)",
           },
         },
       },
@@ -92,6 +95,10 @@ const theme = createTheme({
           textTransform: "none" as const,
           fontWeight: 600,
           padding: "10px 20px",
+          transition: "all 0.15s ease",
+          "&:active": {
+            transform: "scale(0.97)",
+          },
         },
         contained: {
           background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
@@ -146,6 +153,10 @@ const theme = createTheme({
         root: {
           borderRadius: 16,
           boxShadow: "0 4px 20px rgba(13,148,136,0.3)",
+          transition: "all 0.15s ease",
+          "&:active": {
+            transform: "scale(0.92)",
+          },
         },
       },
     },
