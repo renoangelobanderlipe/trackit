@@ -13,6 +13,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
+import TiLogo from "@/components/TiLogo";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -30,10 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <AppBar
         position="sticky"
         elevation={0}
-        sx={{
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
+        sx={{ borderBottom: "1px solid", borderColor: "divider" }}
       >
         <Toolbar sx={{ px: 2 }}>
           <Box
@@ -44,19 +42,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               flexGrow: 1,
             }}
           >
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 2,
-                background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <AccountBalanceWalletIcon sx={{ fontSize: 18, color: "white" }} />
-            </Box>
+            <TiLogo size="sm" />
             <Typography variant="h6" sx={{ fontSize: "1.1rem" }}>
               TrackIt
             </Typography>
@@ -64,18 +50,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <IconButton
             onClick={handleLogout}
             size="small"
+            aria-label="Logout"
             sx={{
               color: "text.secondary",
               "&:hover": { color: "error.main" },
             }}
-            title="Logout"
           >
             <LogoutRoundedIcon fontSize="small" />
           </IconButton>
         </Toolbar>
       </AppBar>
 
-      <Box>{children}</Box>
+      {children}
 
       <Paper
         sx={{

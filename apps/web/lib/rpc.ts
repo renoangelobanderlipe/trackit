@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 
 const LARAVEL_URL = process.env.LARAVEL_URL ?? "http://localhost:8000";
-const FRONTEND_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 type RpcOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";

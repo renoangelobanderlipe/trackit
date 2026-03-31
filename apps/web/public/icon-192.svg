@@ -7,13 +7,5 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="108" fill="url(#bg)"/>
-  <circle cx="420" cy="80" r="100" fill="rgba(255,255,255,0.05)"/>
-  <!-- Chart bars -->
-  <rect x="130" y="310" width="64" height="90" rx="14" fill="rgba(255,255,255,0.25)"/>
-  <rect x="224" y="240" width="64" height="160" rx="14" fill="rgba(255,255,255,0.4)"/>
-  <rect x="318" y="180" width="64" height="220" rx="14" fill="rgba(255,255,255,0.6)"/>
-  <!-- Trend line -->
-  <path d="M162 260 L256 200 L350 145" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <circle cx="350" cy="145" r="18" fill="white"/>
-  <circle cx="350" cy="145" r="9" fill="#0d9488"/>
+  <text x="256" y="340" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-weight="800" font-size="280" fill="white" letter-spacing="-14">Ti</text>
 </svg>

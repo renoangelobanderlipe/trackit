@@ -35,3 +35,20 @@ export function formatCurrency(value: string | number): string {
     maximumFractionDigits: 0,
   }).format(num);
 }
+
+/**
+ * Parse a Laravel error response string into a user-friendly message.
+ */
+export function parseApiError(error: string): string {
+  try {
+    const parsed = JSON.parse(error);
+    if (parsed.errors) {
+      const firstField = Object.keys(parsed.errors)[0];
+      return parsed.errors[firstField][0];
+    }
+    if (parsed.message) return parsed.message;
+    return "Something went wrong.";
+  } catch {
+    return error || "Something went wrong. Please try again.";
+  }
+}

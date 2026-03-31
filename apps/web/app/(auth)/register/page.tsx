@@ -1,16 +1,17 @@
 "use client";
 
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import Alert from "@mui/material/Alert";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { register } from "@/app/actions/auth";
+import TiLogo from "@/components/TiLogo";
+import { parseApiError } from "@/lib/format";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,11 +28,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     const result = await register(name, email, password, passwordConfirmation);
-
     setLoading(false);
 
     if (!result.ok) {
-      setError(safeParseError(result.error));
+      setError(parseApiError(result.error));
       return;
     }
 
@@ -40,22 +40,20 @@ export default function RegisterPage() {
 
   return (
     <Box>
-      <Box sx={{ textAlign: "center", mb: 3 }}>
-        <Avatar
-          sx={{
-            mx: "auto",
-            mb: 2,
-            width: 56,
-            height: 56,
-            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
-          }}
+      <Box sx={{ textAlign: "center", mb: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <TiLogo size="lg" />
+        </Box>
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{ fontWeight: 800, mb: 0.5 }}
         >
-          <AccountBalanceWalletIcon sx={{ fontSize: 28 }} />
-        </Avatar>
-        <Typography variant="h5" component="h1" gutterBottom>
           Create account
         </Typography>
-        <Typography variant="body2">Start tracking your loans</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Start tracking your loans with TrackIt
+        </Typography>
       </Box>
 
       {error && (
@@ -105,39 +103,25 @@ export default function RegisterPage() {
           variant="contained"
           fullWidth
           size="large"
-          disabled={loading}
-          sx={{ mb: 2.5 }}
+          disabled={
+            loading || !name || !email || !password || !passwordConfirmation
+          }
         >
           {loading ? "Creating account..." : "Create account"}
         </Button>
-        <Typography variant="body2" align="center">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            style={{
-              color: "#0d9488",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            Sign in
-          </Link>
-        </Typography>
       </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      <Typography variant="body2" align="center" color="text.secondary">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          style={{ color: "#0d9488", fontWeight: 600, textDecoration: "none" }}
+        >
+          Sign in
+        </Link>
+      </Typography>
     </Box>
   );
-}
-
-function safeParseError(error: string): string {
-  try {
-    const parsed = JSON.parse(error);
-    if (parsed.errors) {
-      const firstField = Object.keys(parsed.errors)[0];
-      return parsed.errors[firstField][0];
-    }
-    if (parsed.message) return parsed.message;
-    return "Registration failed.";
-  } catch {
-    return error || "Something went wrong. Please try again.";
-  }
 }

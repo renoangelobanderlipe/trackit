@@ -1,16 +1,17 @@
 "use client";
 
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import Alert from "@mui/material/Alert";
-import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { login } from "@/app/actions/auth";
+import TiLogo from "@/components/TiLogo";
+import { parseApiError } from "@/lib/format";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,11 +26,10 @@ export default function LoginPage() {
     setLoading(true);
 
     const result = await login(email, password);
-
     setLoading(false);
 
     if (!result.ok) {
-      setError(safeParseError(result.error));
+      setError(parseApiError(result.error));
       return;
     }
 
@@ -38,22 +38,20 @@ export default function LoginPage() {
 
   return (
     <Box>
-      <Box sx={{ textAlign: "center", mb: 3 }}>
-        <Avatar
-          sx={{
-            mx: "auto",
-            mb: 2,
-            width: 56,
-            height: 56,
-            background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
-          }}
+      <Box sx={{ textAlign: "center", mb: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <TiLogo size="lg" />
+        </Box>
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{ fontWeight: 800, mb: 0.5 }}
         >
-          <AccountBalanceWalletIcon sx={{ fontSize: 28 }} />
-        </Avatar>
-        <Typography variant="h5" component="h1" gutterBottom>
           Welcome back
         </Typography>
-        <Typography variant="body2">Sign in to TrackIt</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Sign in to continue to TrackIt
+        </Typography>
       </Box>
 
       {error && (
@@ -86,36 +84,23 @@ export default function LoginPage() {
           variant="contained"
           fullWidth
           size="large"
-          disabled={loading}
-          sx={{ mb: 2.5 }}
+          disabled={loading || !email || !password}
         >
           {loading ? "Signing in..." : "Sign in"}
         </Button>
-        <Typography variant="body2" align="center">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/register"
-            style={{
-              color: "#0d9488",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            Sign up
-          </Link>
-        </Typography>
       </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      <Typography variant="body2" align="center" color="text.secondary">
+        Don&apos;t have an account?{" "}
+        <Link
+          href="/register"
+          style={{ color: "#0d9488", fontWeight: 600, textDecoration: "none" }}
+        >
+          Create one
+        </Link>
+      </Typography>
     </Box>
   );
-}
-
-function safeParseError(error: string): string {
-  try {
-    const parsed = JSON.parse(error);
-    if (parsed.errors?.email) return parsed.errors.email[0];
-    if (parsed.message) return parsed.message;
-    return "Invalid credentials.";
-  } catch {
-    return error || "Something went wrong. Please try again.";
-  }
 }
