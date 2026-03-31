@@ -106,19 +106,30 @@ export async function rpcMutable<T>(
   console.log(`[rpcMutable] ${method} ${path} → ${res.status}`);
 
   // Store response cookies on the Next.js domain for future rpc() calls
-  const setCookieHeaders = res.headers.getSetCookie?.() ?? [];
+  let setCookieHeaders: string[] = [];
+  try {
+    setCookieHeaders = res.headers.getSetCookie?.() ?? [];
+  } catch {
+    // getSetCookie may not be available in all runtimes
+    const raw = res.headers.get("set-cookie");
+    if (raw) setCookieHeaders = [raw];
+  }
   for (const setCookie of setCookieHeaders) {
-    const [nameValue] = setCookie.split(";");
-    const eqIndex = nameValue.indexOf("=");
-    if (eqIndex > 0) {
-      const name = nameValue.slice(0, eqIndex).trim();
-      const value = decodeURIComponent(nameValue.slice(eqIndex + 1));
-      cookieStore.set(name, value, {
-        path: "/",
-        httpOnly: name !== "XSRF-TOKEN",
-        sameSite: "lax",
-        maxAge: 7200,
-      });
+    try {
+      const [nameValue] = setCookie.split(";");
+      const eqIndex = nameValue.indexOf("=");
+      if (eqIndex > 0) {
+        const name = nameValue.slice(0, eqIndex).trim();
+        const value = decodeURIComponent(nameValue.slice(eqIndex + 1));
+        cookieStore.set(name, value, {
+          path: "/",
+          httpOnly: name !== "XSRF-TOKEN",
+          sameSite: "lax",
+          maxAge: 7200,
+        });
+      }
+    } catch {
+      // Cookie storage may fail in some contexts — non-fatal
     }
   }
 
