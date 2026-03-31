@@ -1,0 +1,75 @@
+<?php
+
+use App\Models\Installment;
+use App\Models\Loan;
+use App\Models\User;
+
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
+});
+
+test('can mark installment as fully paid', function () {
+    $loan = Loan::factory()->for($this->user)->create();
+    $installment = Installment::factory()->for($loan)->create(['amount' => '1500.00', 'paid_amount' => 0]);
+
+    $response = $this->patchJson("/api/installments/{$installment->id}/pay", [
+        'paid_amount' => 1500,
+        'paid_date' => '2026-01-15',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.status', 'paid')
+        ->assertJsonPath('data.paid_amount', '1500.00');
+});
+
+test('can make a partial payment', function () {
+    $loan = Loan::factory()->for($this->user)->create();
+    $installment = Installment::factory()->for($loan)->create(['amount' => '1500.00', 'paid_amount' => 0]);
+
+    $response = $this->patchJson("/api/installments/{$installment->id}/pay", [
+        'paid_amount' => 500,
+        'paid_date' => '2026-01-15',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.status', 'partial')
+        ->assertJsonPath('data.paid_amount', '500.00');
+});
+
+test('auto-completes loan when all installments are paid', function () {
+    $loan = Loan::factory()->for($this->user)->create(['status' => 'in_progress']);
+    $i1 = Installment::factory()->for($loan)->create(['amount' => '500.00', 'status' => 'paid', 'paid_amount' => '500.00']);
+    $i2 = Installment::factory()->for($loan)->create(['amount' => '500.00', 'paid_amount' => 0]);
+
+    $this->patchJson("/api/installments/{$i2->id}/pay", [
+        'paid_amount' => 500,
+        'paid_date' => '2026-01-15',
+    ]);
+
+    expect($loan->fresh()->status)->toBe('done');
+});
+
+test('auto-transitions loan from not_started to in_progress on first payment', function () {
+    $loan = Loan::factory()->for($this->user)->create(['status' => 'not_started']);
+    $installment = Installment::factory()->for($loan)->create(['amount' => '1500.00', 'paid_amount' => 0]);
+
+    $this->patchJson("/api/installments/{$installment->id}/pay", [
+        'paid_amount' => 500,
+        'paid_date' => '2026-01-15',
+    ]);
+
+    expect($loan->fresh()->status)->toBe('in_progress');
+});
+
+test('cannot mark another user installment as paid', function () {
+    $otherLoan = Loan::factory()->create();
+    $installment = Installment::factory()->for($otherLoan)->create();
+
+    $response = $this->patchJson("/api/installments/{$installment->id}/pay", [
+        'paid_amount' => 100,
+        'paid_date' => '2026-01-15',
+    ]);
+
+    $response->assertStatus(403);
+});
