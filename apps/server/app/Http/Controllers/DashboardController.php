@@ -21,6 +21,8 @@ class DashboardController extends Controller
             'total_paid' => $data['total_paid'],
             'upcoming_payments' => InstallmentResource::collection($data['upcoming_payments']),
             'loans_summary' => LoanResource::collection($data['loans_summary']),
+            'monthly_payments' => $data['monthly_payments'],
+            'loan_breakdown' => $data['loan_breakdown'],
         ]);
     }
 }

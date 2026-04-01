@@ -17,6 +17,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
 import DeleteLoanDialog from "./DeleteLoanDialog";
 import InstallmentList from "./InstallmentList";
+import LoanSummaryStats from "./LoanSummaryStats";
 
 export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
   const [showDelete, setShowDelete] = useState(false);
@@ -209,6 +210,9 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
           variant="outlined"
         />
       </Box>
+
+      {/* Summary Stats */}
+      <LoanSummaryStats loan={loan} />
 
       {loan.notes && (
         <Card sx={{ mb: 2.5 }}>

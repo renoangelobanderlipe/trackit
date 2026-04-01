@@ -19,6 +19,7 @@ import {
 } from "@/components/animations/StaggerList";
 import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
 import type { DashboardData } from "@/lib/types";
+import DashboardCharts from "./DashboardCharts";
 
 export default function DashboardClient({ data }: { data: DashboardData }) {
   const totalOwed = Number.parseFloat(data.total_owed);
@@ -264,6 +265,12 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           </Card>
         </FadeIn>
       )}
+
+      {/* Charts */}
+      <DashboardCharts
+        monthlyPayments={data.monthly_payments}
+        loanBreakdown={data.loan_breakdown}
+      />
 
       {/* Active Loans — matching loan list style */}
       {data.loans_summary.length > 0 && (

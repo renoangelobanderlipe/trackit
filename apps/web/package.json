@@ -15,6 +15,7 @@
     "@hugeicons/react": "^1.1.6",
     "@mui/material": "^7.3.9",
     "@mui/material-nextjs": "^7.3.9",
+    "@mui/x-charts": "^8.28.0",
     "@mui/x-date-pickers": "^8.27.2",
     "canvas-confetti": "^1.9.4",
     "dayjs": "^1.11.20",

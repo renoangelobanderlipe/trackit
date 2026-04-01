@@ -98,6 +98,17 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 1 }}
         />
+        <Box sx={{ textAlign: "right", mb: 0.5 }}>
+          <MuiLink
+            component={NextLink}
+            href="/forgot-password"
+            color="primary"
+            variant="body2"
+            sx={{ fontWeight: 500, textDecoration: "none" }}
+          >
+            Forgot password?
+          </MuiLink>
+        </Box>
         <FormControlLabel
           control={
             <Checkbox
