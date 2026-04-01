@@ -4,9 +4,10 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
+import MuiLink from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { register } from "@/app/actions/auth";
@@ -130,12 +131,14 @@ export default function RegisterPage() {
 
       <Typography variant="body2" align="center" color="text.secondary">
         Already have an account?{" "}
-        <Link
+        <MuiLink
+          component={NextLink}
           href="/login"
-          style={{ color: "#0d9488", fontWeight: 600, textDecoration: "none" }}
+          color="primary"
+          sx={{ fontWeight: 600, textDecoration: "none" }}
         >
           Sign in
-        </Link>
+        </MuiLink>
       </Typography>
     </Box>
   );
