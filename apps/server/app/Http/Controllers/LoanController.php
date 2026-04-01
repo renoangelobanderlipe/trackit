@@ -53,8 +53,6 @@ class LoanController extends Controller
 
     public function update(UpdateLoanRequest $request, Loan $loan): LoanResource
     {
-        Gate::authorize('update', $loan);
-
         $loan->update($request->validated());
 
         return new LoanResource($loan->load('installments'));

@@ -37,7 +37,7 @@ class InstallmentController extends Controller
     public function reversePayment(Request $request, Installment $installment, ReversePayment $action): InstallmentResource
     {
         Gate::authorize('view', $installment->loan);
-        abort_if((float) $installment->paid_amount <= 0, 422, 'No payment to reverse.');
+        abort_if(bccomp((string) $installment->paid_amount, '0.00', 2) <= 0, 422, 'No payment to reverse.');
 
         return new InstallmentResource($action->execute($installment));
     }
