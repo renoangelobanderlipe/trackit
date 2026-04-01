@@ -63,6 +63,28 @@ test('can delete own loan', function () {
     $this->assertSoftDeleted('loans', ['id' => $loan->id]);
 });
 
+test('cannot change status of a done loan', function () {
+    $loan = Loan::factory()->for($this->user)->done()->create();
+
+    $response = $this->putJson("/api/loans/{$loan->id}", [
+        'status' => 'in_progress',
+    ]);
+
+    $response->assertForbidden();
+    expect($loan->fresh()->status)->toBe('done');
+});
+
+test('can update notes on a done loan', function () {
+    $loan = Loan::factory()->for($this->user)->done()->create();
+
+    $response = $this->putJson("/api/loans/{$loan->id}", [
+        'notes' => 'Updated notes on done loan',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.notes', 'Updated notes on done loan');
+});
+
 test('cannot delete another user loan', function () {
     $otherLoan = Loan::factory()->create();
 
