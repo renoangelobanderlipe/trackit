@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -32,6 +33,11 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         ->middleware('throttle:10,1');
     Route::post('/loans/{loan}/regenerate-installments', [InstallmentController::class, 'regenerate'])
         ->middleware('throttle:5,1');
+
+    Route::put('/user/profile', [AccountController::class, 'updateProfile']);
+    Route::put('/user/password', [AccountController::class, 'changePassword']);
+    Route::put('/user/theme', [AccountController::class, 'updateTheme']);
+    Route::delete('/user', [AccountController::class, 'destroy']);
 
     Route::get('/loan-filters', fn (Request $request) => response()->json($request->user()->loan_filters ?? []));
     Route::put('/loan-filters', function (SaveLoanFiltersRequest $request) {

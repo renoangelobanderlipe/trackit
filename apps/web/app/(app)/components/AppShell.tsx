@@ -3,6 +3,7 @@
 import {
   DashboardSquare02Icon,
   Logout01Icon,
+  Settings02Icon,
   Wallet01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -24,7 +25,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const navValue = pathname.startsWith("/loans") ? 1 : 0;
+  const navValue = pathname.startsWith("/account")
+    ? 2
+    : pathname.startsWith("/loans")
+      ? 1
+      : 0;
 
   async function handleLogout() {
     await logout();
@@ -117,7 +122,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <BottomNavigation
           value={navValue}
           onChange={(_, newValue) => {
-            router.push(newValue === 0 ? "/dashboard" : "/loans");
+            const routes = ["/dashboard", "/loans", "/account"];
+            router.push(routes[newValue]);
           }}
           showLabels
           sx={{
@@ -136,6 +142,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <BottomNavigationAction
             label="Loans"
             icon={<HugeiconsIcon icon={Wallet01Icon} size={22} />}
+          />
+          <BottomNavigationAction
+            label="Account"
+            icon={<HugeiconsIcon icon={Settings02Icon} size={22} />}
           />
         </BottomNavigation>
       </Paper>
