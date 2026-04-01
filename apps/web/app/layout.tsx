@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { cookies } from "next/headers";
 import Providers from "./providers";
 import "./globals.css";
 
@@ -46,15 +47,22 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("theme")?.value as
+    | "light"
+    | "dark"
+    | "system"
+    | undefined;
+
   return (
     <html lang="en" className={geistSans.variable}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers initialTheme={themeCookie ?? "system"}>{children}</Providers>
       </body>
     </html>
   );

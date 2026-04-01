@@ -67,6 +67,7 @@ a,
 input,
 select,
 textarea {
+  /* biome-ignore lint/complexity/noImportantStyles: required to prevent iOS Safari auto-zoom on focus */
   font-size: 16px !important;
 }
 
