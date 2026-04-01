@@ -10,6 +10,7 @@ use App\Services\InstallmentGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
@@ -63,13 +64,13 @@ class LoanController extends Controller
         return new LoanResource($loan);
     }
 
-    public function destroy(Request $request, Loan $loan): JsonResponse
+    public function destroy(Request $request, Loan $loan): Response
     {
         abort_unless($loan->user_id === $request->user()->id, 403);
 
         $loan->installments()->delete();
         $loan->delete();
 
-        return response()->json(null, 204);
+        return response()->noContent();
     }
 }

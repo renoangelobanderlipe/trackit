@@ -15,7 +15,7 @@ class InstallmentController extends Controller
     public function upcoming(Request $request): AnonymousResourceCollection
     {
         $installments = Installment::query()
-            ->whereHas('loan', fn ($q) => $q->where('user_id', $request->user()->id))
+            ->whereRelation('loan', 'user_id', $request->user()->id)
             ->where('status', '!=', 'paid')
             ->orderBy('due_date')
             ->limit(10)
