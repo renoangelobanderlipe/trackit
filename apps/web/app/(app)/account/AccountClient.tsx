@@ -23,6 +23,7 @@ import {
 } from "@/app/actions/account";
 import { useThemeMode } from "@/app/providers";
 import { parseApiError } from "@/lib/format";
+import TwoFactorSection from "./TwoFactorSection";
 
 type User = {
   id: string;
@@ -253,6 +254,9 @@ export default function AccountClient({ user }: { user: User }) {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Two-Factor Authentication */}
+      <TwoFactorSection />
 
       {/* Appearance */}
       <SectionLabel label="Appearance" />

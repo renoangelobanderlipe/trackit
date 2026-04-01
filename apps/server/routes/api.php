@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\TwoFactorStatusController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
@@ -22,6 +23,7 @@ Route::post('/login', LoginController::class)->middleware('throttle:5,1');
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', LogoutController::class);
     Route::get('/user', UserController::class);
+    Route::get('/user/two-factor-status', TwoFactorStatusController::class);
 
     Route::get('/dashboard', DashboardController::class);
     Route::apiResource('loans', LoanController::class);
