@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-TrackIt — a loans/installment tracking web app. Monorepo: Next.js frontend + Laravel backend.
+TrackIt — a loans/installment tracking PWA. Monorepo: Next.js frontend + Laravel backend.
 
 ## Commands
 
@@ -14,7 +14,6 @@ TrackIt — a loans/installment tracking web app. Monorepo: Next.js frontend + L
 # Frontend (Next.js 16 — apps/web)
 pnpm dev              # Dev server at localhost:3000
 pnpm build            # Production build
-pnpm start            # Serve production build
 pnpm lint             # Biome check (JS/TS linting + formatting)
 pnpm format           # Biome auto-format
 
@@ -25,69 +24,91 @@ pnpm lint:server      # Pint formatter (dirty files)
 
 # Or run directly in apps/server:
 cd apps/server
-php artisan serve     # Laravel server at localhost:8000
 php artisan test --compact
-php artisan test --compact --filter=CreateLoanTest  # Run single test
+php artisan test --compact --filter=CreateLoanTest
 vendor/bin/pint --dirty --format agent
 ```
 
 ## Stack
 
-- **Next.js 16.2.1** with App Router — breaking changes from earlier versions; read `node_modules/next/dist/docs/` before writing code
-- **React 19** with React Compiler enabled (`reactCompiler: true` in next.config.ts)
-- **MUI 7** — component library with AppRouterCacheProvider (v16-appRouter), ThemeProvider, CssBaseline
-- **Laravel 13** with PHP 8.4 — follow Laravel Boost guidelines in `apps/server/CLAUDE.md`
+- **Next.js 16** with App Router — read `node_modules/next/dist/docs/` before writing code
+- **React 19** with React Compiler (`reactCompiler: true`)
+- **MUI 7** + Hugeicons — component library with custom teal theme
+- **Laravel 13** with PHP 8.4 — follow Boost guidelines in `apps/server/CLAUDE.md`
 - **Laravel Sanctum** — cookie-based SPA authentication
 - **PostgreSQL** — primary database
-- **Pest 4** for PHP testing
-- **Pint** for PHP formatting — run on dirty files before committing
-- **TypeScript 5** — strict mode
-- **Biome 2** — JS/TS linting and formatting (excludes `apps/server`)
-- **pnpm workspaces** — monorepo package manager
+- **Pest 4** — PHP testing | **Biome 2** — JS/TS linting | **Pint** — PHP formatting
+- **pnpm workspaces** — monorepo | **Motion** — animations | **dayjs** — dates
 
-## Monorepo Structure
+## Architecture (apps/server) — Feature-Based Modular
 
-- `apps/web/` — Next.js frontend (`@trackit/web`)
-- `apps/server/` — Laravel backend (PHP, has its own `composer.json` and `package.json`)
-- Root `package.json` — workspace scripts, shared dev deps (Biome)
-- Biome handles JS/TS; Pint handles PHP formatting
+```
+app/
+├── Actions/              # Single-purpose business logic classes
+│   ├── CreateLoan.php           # Create loan + generate installments + validate sum
+│   ├── MarkInstallmentPaid.php  # Lock, pay, transition loan status
+│   ├── ReversePayment.php       # Lock, reset, revert loan status
+│   ├── RegenerateInstallments.php # Delete unpaid, regenerate from remaining
+│   └── GetDashboardData.php     # Dashboard aggregation queries
+├── Http/
+│   ├── Controllers/      # Thin: validate → authorize → delegate → respond
+│   ├── Middleware/        # SecurityHeaders
+│   ├── Requests/          # Form request validation
+│   └── Resources/         # API resource transformation
+├── Models/               # Eloquent models (User, Loan, Installment) — UUIDs, soft deletes
+├── Policies/             # Centralized authorization (LoanPolicy)
+│   └── LoanPolicy.php          # view, update, delete — all check user_id
+├── Providers/
+└── Services/             # Domain services
+    └── InstallmentGenerator.php # Generates installments with rounding correction
+```
 
-## Architecture (apps/web)
+**Key patterns:**
+- Controllers are thin — they delegate to Action classes via dependency injection
+- Authorization uses `Gate::authorize('view', $loan)` backed by `LoanPolicy`
+- All money math uses `bcmath` (bcadd, bcsub, bcdiv, bccomp) — never float
+- Transactions with `lockForUpdate()` on concurrent payment operations
 
-- `app/(auth)/` — login, register pages (client-side, calls Laravel directly)
-- `app/(app)/` — authenticated pages: dashboard, loans, loan detail, edit
-- `app/actions/` — Server Actions that call Laravel via `lib/rpc.ts`
-- `lib/rpc.ts` — typed fetch wrapper with cookie forwarding (Server Actions → Laravel)
-- `lib/auth-client.ts` — client-side auth fetch (CSRF cookie + XSRF-TOKEN for login/register)
-- `lib/types.ts` — shared TypeScript types (Loan, Installment, DashboardData, etc.)
-- `proxy.ts` — Next.js 16 route protection (replaces middleware.ts, export `proxy`)
-- `app/theme.ts` — MUI theme with CSS variables, Geist Sans font
-- Path alias: `@/*` maps to `apps/web/*`
+## Architecture (apps/web) — Feature-Based Routes
 
-## Architecture (apps/server)
-
-- Standard Laravel 13 structure
-- `app/Services/InstallmentGenerator.php` — generates installments from loan params (handles monthly, twice_a_month, weekly, biweekly)
-- `app/Http/Resources/` — LoanResource, InstallmentResource (computed fields: total_paid, is_overdue)
-- API routes in `routes/api.php` under `auth:sanctum` middleware
-- Sanctum with `statefulApi()` middleware in `bootstrap/app.php`
-- CORS configured for frontend URL in `config/cors.php`
+```
+app/
+├── (auth)/               # Auth pages (login, register) — split-panel layout
+├── (app)/                # Authenticated pages
+│   ├── dashboard/        # Summary cards, upcoming payments, active loans
+│   └── loans/            # List (infinite scroll + search), detail, create, edit
+├── actions/              # Server Actions — RPC bridge to Laravel
+lib/
+├── rpc.ts                # Typed fetch wrapper: rpc() read-only, rpcMutable() with CSRF
+├── types.ts              # Shared TypeScript types
+├── format.ts             # formatCurrency, formatDate, decimalSubtract, parseApiError
+components/
+├── TiLogo.tsx            # Shared logo component (sm/md/lg, solid/glass)
+├── animations/           # CountUp, FadeIn, StaggerList, AnimatedProgress, PulsingFab, Confetti
+proxy.ts                  # Next.js 16 route protection (replaces middleware.ts)
+```
 
 ## Auth Flow
 
-- **Login/Register**: Browser → Laravel directly (fetch + credentials: include)
-  1. `GET /sanctum/csrf-cookie` → get XSRF-TOKEN
-  2. `POST /api/login` with `X-XSRF-TOKEN` header
-  3. Sets `trackit_authed` cookie on Next.js domain for proxy to check
-- **Protected pages**: Browser → Server Action → `rpc()` → Laravel (forwards cookies)
-- **Logout**: Server Action calls Laravel, clears `trackit_authed` cookie
+All auth goes through Server Actions — browser never calls Laravel directly:
+
+```
+Browser → Server Action → rpcMutable() → /sanctum/csrf-cookie → Laravel API
+```
+
+- `rpcMutable()` fetches fresh CSRF token before every state-changing request
+- Session cookies stored on Next.js domain via `cookieStore.set()`
+- `proxy.ts` checks `trackit_authed` cookie for route protection
+- `buildCookieHeader()` forwards cookies to Laravel (without URL encoding)
 
 ## Key Constraints
 
-- Next.js 16 uses `proxy.ts` (not `middleware.ts`), export named `proxy`
-- Next.js 16: `cookies()` from `next/headers` is async — must `await cookies()`
-- Next.js 16: can't pass component functions as props from Server to Client Components (e.g., `component={Link}`)
-- React Compiler is enabled — avoid manual `useMemo`/`useCallback`/`React.memo`
-- Always run `vendor/bin/pint --dirty --format agent` after modifying PHP files
-- Use `php artisan make:` commands to scaffold Laravel files
-- Use `pnpm` only for JS (not npm/npx)
+- Next.js 16: `proxy.ts` not `middleware.ts`, `cookies()` is async
+- Next.js 16: can't pass component functions as props Server → Client
+- React Compiler enabled — no manual useMemo/useCallback/React.memo
+- All money as strings between API and frontend — `decimalSubtract()` for client math
+- `formatCurrency()` shows 2 decimals only when value has cents
+- Session cookie name is `trackit-session` (derived from APP_NAME)
+- Run `vendor/bin/pint --dirty --format agent` after PHP changes
+- Use `php artisan make:` to scaffold Laravel files
+- Use `pnpm` only (not npm/npx)
