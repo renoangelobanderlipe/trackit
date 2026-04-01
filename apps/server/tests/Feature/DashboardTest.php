@@ -22,7 +22,7 @@ test('dashboard returns correct summary data', function () {
 
     $response->assertOk()
         ->assertJsonPath('active_loans_count', 1)
-        ->assertJsonPath('total_owed', '3000.00')
+        ->assertJsonPath('total_owed', '1500.00')
         ->assertJsonPath('total_paid', '1500.00');
 });
 

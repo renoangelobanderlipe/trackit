@@ -15,8 +15,8 @@ class DashboardController extends Controller
         $user = $request->user();
         $activeLoans = $user->loans()->where('status', '!=', 'done')->with('installments')->get();
 
-        $totalOwed = $activeLoans->sum('total_amount');
         $totalPaid = $activeLoans->sum(fn ($loan) => $loan->installments->sum('paid_amount'));
+        $totalOwed = $activeLoans->sum('total_amount') - $totalPaid;
 
         $upcomingPayments = Installment::query()
             ->whereHas('loan', fn ($q) => $q->where('user_id', $user->id)->where('status', '!=', 'done'))

@@ -7,6 +7,7 @@ use App\Http\Resources\InstallmentResource;
 use App\Models\Installment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class InstallmentController extends Controller
 {
@@ -25,26 +26,30 @@ class InstallmentController extends Controller
 
     public function markPaid(MarkPaidRequest $request, Installment $installment): InstallmentResource
     {
-        $newPaidAmount = (float) $installment->paid_amount + (float) $request->validated('paid_amount');
-        $status = $newPaidAmount >= (float) $installment->amount ? 'paid' : 'partial';
+        return DB::transaction(function () use ($request, $installment) {
+            // Lock row to prevent concurrent payment race condition
+            $installment = Installment::lockForUpdate()->find($installment->id);
 
-        $installment->update([
-            'paid_amount' => $newPaidAmount,
-            'paid_date' => $request->validated('paid_date'),
-            'status' => $status,
-            'notes' => $request->validated('notes') ?? $installment->notes,
-        ]);
+            $newPaidAmount = bcadd((string) $installment->paid_amount, (string) $request->validated('paid_amount'), 2);
+            $status = bccomp($newPaidAmount, (string) $installment->amount, 2) >= 0 ? 'paid' : 'partial';
 
-        // Auto-transition loan status based on payment state
-        $loan = $installment->loan;
-        $allPaid = $loan->installments()->where('status', '!=', 'paid')->doesntExist();
+            $installment->update([
+                'paid_amount' => $newPaidAmount,
+                'paid_date' => $request->validated('paid_date'),
+                'status' => $status,
+                'notes' => $request->validated('notes') ?? $installment->notes,
+            ]);
 
-        if ($allPaid) {
-            $loan->update(['status' => 'done']);
-        } elseif ($loan->status === 'not_started') {
-            $loan->update(['status' => 'in_progress']);
-        }
+            $loan = $installment->loan;
+            $allPaid = $loan->installments()->where('status', '!=', 'paid')->doesntExist();
 
-        return new InstallmentResource($installment);
+            if ($allPaid) {
+                $loan->update(['status' => 'done']);
+            } elseif ($loan->status === 'not_started') {
+                $loan->update(['status' => 'in_progress']);
+            }
+
+            return new InstallmentResource($installment);
+        });
     }
 }

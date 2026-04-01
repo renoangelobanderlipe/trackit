@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { updateLoan } from "@/app/actions/loans";
+import { parseApiError } from "@/lib/format";
 import type { LoanDetail } from "@/lib/types";
 
 export default function EditLoanForm({ loan }: { loan: LoanDetail }) {
@@ -34,7 +35,7 @@ export default function EditLoanForm({ loan }: { loan: LoanDetail }) {
     setLoading(false);
 
     if (!result.ok) {
-      setError("Failed to update loan.");
+      setError(parseApiError(result.error));
       return;
     }
 

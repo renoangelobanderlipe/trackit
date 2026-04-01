@@ -17,10 +17,23 @@ class MarkPaidRequest extends FormRequest
      */
     public function rules(): array
     {
+        $installment = $this->route('installment');
+        $remaining = bcsub((string) $installment->amount, (string) $installment->paid_amount, 2);
+
         return [
-            'paid_amount' => ['required', 'numeric', 'min:0.01'],
+            'paid_amount' => ['required', 'numeric', 'min:0.01', "max:{$remaining}"],
             'paid_date' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'paid_amount.max' => 'Payment cannot exceed the remaining balance.',
         ];
     }
 }

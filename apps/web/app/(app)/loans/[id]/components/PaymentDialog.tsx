@@ -16,7 +16,7 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { markInstallmentPaid } from "@/app/actions/installments";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, parseApiError } from "@/lib/format";
 import type { Installment } from "@/lib/types";
 
 type Props = {
@@ -35,21 +35,30 @@ export default function PaymentDialog({ installment, open, onClose }: Props) {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const isFullPayment = Number.parseFloat(amount) >= remaining;
 
   async function handleSubmit() {
+    setError("");
     setLoading(true);
-    await markInstallmentPaid(installment.id, {
+
+    const result = await markInstallmentPaid(installment.id, {
       paid_amount: Number.parseFloat(amount),
       paid_date: date,
       notes: notes || undefined,
     });
+
     setLoading(false);
+
+    if (!result.ok) {
+      setError(parseApiError(result.error));
+      return;
+    }
+
     setSuccess(true);
 
     if (isFullPayment) {
-      // Fire confetti for full payment
       confetti({
         particleCount: 80,
         spread: 70,
@@ -131,6 +140,11 @@ export default function PaymentDialog({ installment, open, onClose }: Props) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
+        {error && (
+          <Typography color="error" variant="body2" sx={{ mt: 1.5 }}>
+            {error}
+          </Typography>
+        )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} sx={{ borderRadius: 3 }}>

@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createLoan } from "@/app/actions/loans";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, parseApiError } from "@/lib/format";
 
 const frequencies = [
   { value: "monthly", label: "Monthly" },
@@ -70,7 +70,7 @@ export default function LoanForm() {
     setLoading(false);
 
     if (!result.ok) {
-      setError("Failed to create loan. Please check your inputs.");
+      setError(parseApiError(result.error));
       return;
     }
 

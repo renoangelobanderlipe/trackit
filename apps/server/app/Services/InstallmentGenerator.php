@@ -42,12 +42,24 @@ class InstallmentGenerator
     private function calculateDueDate(Carbon $startDate, int $index, string $frequency, ?array $dueDays): Carbon
     {
         return match ($frequency) {
-            'monthly' => $startDate->copy()->addMonths($index),
+            'monthly' => $this->monthlyDate($startDate, $index),
             'weekly' => $startDate->copy()->addWeeks($index),
             'biweekly' => $startDate->copy()->addWeeks($index * 2),
             'twice_a_month' => $this->twiceAMonthDate($startDate, $index, $dueDays ?? [15, 25]),
-            default => $startDate->copy()->addMonths($index),
+            default => $this->monthlyDate($startDate, $index),
         };
+    }
+
+    /**
+     * Keep the same day-of-month across months (e.g., 31st stays 31st or last day of month).
+     */
+    private function monthlyDate(Carbon $startDate, int $index): Carbon
+    {
+        $targetDay = $startDate->day;
+        $date = $startDate->copy()->startOfMonth()->addMonths($index);
+        $day = min($targetDay, $date->daysInMonth);
+
+        return $date->day($day);
     }
 
     private function twiceAMonthDate(Carbon $startDate, int $index, array $dueDays): Carbon

@@ -3,7 +3,7 @@
  * "2026-01-15" → "Jan 15, 2026"
  */
 export function formatDate(dateStr: string): string {
-  const date = new Date(`${dateStr}T00:00:00`);
+  const date = new Date(`${dateStr}T12:00:00`);
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -16,7 +16,7 @@ export function formatDate(dateStr: string): string {
  * "2026-01-15" → "Jan 15"
  */
 export function formatDateShort(dateStr: string): string {
-  const date = new Date(`${dateStr}T00:00:00`);
+  const date = new Date(`${dateStr}T12:00:00`);
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

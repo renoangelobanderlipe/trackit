@@ -92,6 +92,7 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
                 <Link href={`/loans/${loan.id}/edit`}>
                   <IconButton
                     size="small"
+                    aria-label="Edit loan"
                     sx={{ color: "rgba(255,255,255,0.8)" }}
                   >
                     <HugeiconsIcon icon={PencilEdit01Icon} size={16} />
@@ -100,6 +101,7 @@ export default function LoanDetailClient({ loan }: { loan: LoanDetail }) {
                 <IconButton
                   onClick={() => setShowDelete(true)}
                   size="small"
+                  aria-label="Delete loan"
                   sx={{
                     color: "rgba(255,255,255,0.6)",
                     "&:hover": { color: "#fca5a5" },

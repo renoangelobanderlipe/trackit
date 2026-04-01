@@ -14,8 +14,8 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
 });
 
-Route::post('/register', RegisterController::class);
-Route::post('/login', LoginController::class);
+Route::post('/register', RegisterController::class)->middleware('throttle:5,1');
+Route::post('/login', LoginController::class)->middleware('throttle:5,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', LogoutController::class);

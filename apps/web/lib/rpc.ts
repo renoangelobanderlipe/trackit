@@ -20,6 +20,14 @@ type RpcResponse<T> =
       ok: false;
     };
 
+const REQUEST_TIMEOUT = 15000; // 15 seconds
+
+function withTimeout(ms: number): { signal: AbortSignal } {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return { signal: controller.signal };
+}
+
 /**
  * Build Cookie header from cookie store using raw (decoded) values.
  * cookieStore.toString() URL-encodes values which Laravel can't decrypt.
@@ -56,6 +64,7 @@ export async function rpc<T>(
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
     cache: "no-store",
+    ...withTimeout(REQUEST_TIMEOUT),
   });
 
   if (!res.ok) {
@@ -100,9 +109,8 @@ export async function rpcMutable<T>(
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
+    ...withTimeout(REQUEST_TIMEOUT),
   });
-
-  console.log(`[rpcMutable] ${method} ${path} → ${res.status}`);
 
   // Store response cookies on the Next.js domain for future rpc() calls
   let setCookieHeaders: string[] = [];
