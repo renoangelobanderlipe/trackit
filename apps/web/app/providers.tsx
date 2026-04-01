@@ -33,36 +33,27 @@ export function useThemeMode() {
   return useContext(ThemeContext);
 }
 
-function getInitialMode(): ThemeMode {
-  if (typeof document === "undefined") return "system";
-  const cookie = document.cookie
-    .split("; ")
-    .find((c) => c.startsWith("theme="));
-  return (cookie?.split("=")[1] as ThemeMode) ?? "system";
-}
+type Props = {
+  initialTheme: ThemeMode;
+  children: React.ReactNode;
+};
 
-function getSystemPreference(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
+export default function Providers({ initialTheme, children }: Props) {
+  const [mode, setModeState] = useState<ThemeMode>(initialTheme);
+  const [systemPref, setSystemPref] = useState<"light" | "dark">("light");
 
-export default function Providers({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>(getInitialMode);
-  const [systemPref, setSystemPref] = useState<"light" | "dark">(
-    getSystemPreference,
-  );
-
-  // Listen for system theme changes
+  // Detect system preference on mount (client only)
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    setSystemPref(mq.matches ? "dark" : "light");
     const handler = (e: MediaQueryListEvent) =>
       setSystemPref(e.matches ? "dark" : "light");
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  // For SSR: when mode is "system", default to "light" (matches server)
+  // After mount, systemPref updates and the theme corrects itself
   const resolvedMode = mode === "system" ? systemPref : mode;
 
   const setMode = useCallback((newMode: ThemeMode) => {
