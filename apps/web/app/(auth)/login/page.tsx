@@ -37,6 +37,11 @@ export default function LoginPage() {
         return;
       }
 
+      if ("two_factor" in result.data) {
+        router.push("/two-factor-challenge");
+        return;
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err) {

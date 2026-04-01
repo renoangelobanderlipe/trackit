@@ -9,6 +9,10 @@ export type User = {
   email: string;
 };
 
+type TwoFactorRequired = { two_factor: true };
+
+export type LoginResult = User | TwoFactorRequired;
+
 const IS_PROD = process.env.NODE_ENV === "production";
 const SESSION_COOKIE = "trackit-session";
 
@@ -30,13 +34,27 @@ export async function login(
   password: string,
   rememberMe = false,
 ) {
-  const result = await rpcMutable<User>("/login", {
+  const result = await rpcMutable<LoginResult>("/login", {
     method: "POST",
     body: { email, password },
   });
 
-  if (result.ok) {
+  if (result.ok && !("two_factor" in result.data)) {
     setAuthCookie(await cookies(), rememberMe);
+  }
+
+  return result;
+}
+
+export async function twoFactorChallenge(code: string, isRecovery = false) {
+  const body = isRecovery ? { recovery_code: code } : { code };
+  const result = await rpcMutable<null>("/two-factor-challenge", {
+    method: "POST",
+    body,
+  });
+
+  if (result.ok) {
+    setAuthCookie(await cookies());
   }
 
   return result;

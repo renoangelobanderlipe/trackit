@@ -21,8 +21,20 @@ class LoginController extends Controller
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            Auth::logout();
+
+            $request->session()->put('login.id', $user->getKey());
+            $request->session()->put('login.guard', 'web');
+            $request->session()->regenerate();
+
+            return response()->json(['two_factor' => true]);
+        }
+
         $request->session()->regenerate();
 
-        return response()->json(Auth::user());
+        return response()->json($user);
     }
 }
