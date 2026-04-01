@@ -19,6 +19,12 @@ class ChangePassword
             ]);
         }
 
+        if (Hash::check($newPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['The new password must be different from the current password.'],
+            ]);
+        }
+
         $user->update(['password' => Hash::make($newPassword)]);
     }
 }

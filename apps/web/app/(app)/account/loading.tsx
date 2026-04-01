@@ -19,6 +19,8 @@ export default function AccountLoading() {
       />
       <Skeleton variant="text" width={90} height={16} sx={{ mb: 1 }} />
       <Skeleton variant="rounded" height={60} sx={{ mb: 3, borderRadius: 4 }} />
+      <Skeleton variant="text" width={90} height={16} sx={{ mb: 1 }} />
+      <Skeleton variant="rounded" height={80} sx={{ mb: 3, borderRadius: 4 }} />
     </Container>
   );
 }

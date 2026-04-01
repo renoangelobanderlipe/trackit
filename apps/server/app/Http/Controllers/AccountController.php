@@ -8,8 +8,8 @@ use App\Actions\UpdateProfile;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\DeleteAccountRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\UpdateThemeRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class AccountController extends Controller
@@ -32,13 +32,9 @@ class AccountController extends Controller
         return response()->json(['message' => 'Password updated successfully.']);
     }
 
-    public function updateTheme(Request $request): JsonResponse
+    public function updateTheme(UpdateThemeRequest $request): JsonResponse
     {
-        $request->validate([
-            'theme_preference' => ['required', 'string', 'in:light,dark,system'],
-        ]);
-
-        $request->user()->update(['theme_preference' => $request->input('theme_preference')]);
+        $request->user()->update(['theme_preference' => $request->validated('theme_preference')]);
 
         return response()->json(['theme_preference' => $request->user()->theme_preference]);
     }
@@ -46,6 +42,9 @@ class AccountController extends Controller
     public function destroy(DeleteAccountRequest $request, DeleteAccount $action): Response
     {
         $action->execute($request->user(), $request->validated('password'));
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->noContent();
     }
