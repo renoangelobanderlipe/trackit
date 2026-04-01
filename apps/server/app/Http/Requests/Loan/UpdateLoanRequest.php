@@ -15,7 +15,6 @@ class UpdateLoanRequest extends FormRequest
             return false;
         }
 
-        // H3/M5: Done loans are locked — only notes can be edited
         if ($loan->status === 'done' && $this->has('status') && $this->input('status') !== 'done') {
             return false;
         }

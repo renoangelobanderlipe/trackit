@@ -33,10 +33,8 @@ class LoanController extends Controller
             $installments = $generator->generate($loan);
             $loan->installments()->createMany($installments);
 
-            // C7: Assert sum of installments equals total_amount
-            $sum = $loan->installments()->sum('amount');
-            $diff = bcsub((string) $loan->total_amount, (string) $sum, 2);
-            abort_if(bccomp($diff, '0.00', 2) !== 0, 500, 'Installment sum mismatch');
+            $sum = collect($installments)->reduce(fn ($carry, $i) => bcadd($carry, $i['amount'], 2), '0.00');
+            abort_if(bccomp($sum, (string) $loan->total_amount, 2) !== 0, 500, 'Installment sum mismatch');
 
             return $loan;
         });
@@ -59,9 +57,6 @@ class LoanController extends Controller
 
     public function update(UpdateLoanRequest $request, Loan $loan): LoanResource
     {
-        // C4: Explicit authorization check
-        abort_unless($loan->user_id === $request->user()->id, 403);
-
         $loan->update($request->validated());
         $loan->load('installments');
 
@@ -72,7 +67,6 @@ class LoanController extends Controller
     {
         abort_unless($loan->user_id === $request->user()->id, 403);
 
-        // C2: Soft delete — loan and installments are recoverable
         $loan->installments()->delete();
         $loan->delete();
 

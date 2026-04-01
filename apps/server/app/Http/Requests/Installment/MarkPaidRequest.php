@@ -23,7 +23,6 @@ class MarkPaidRequest extends FormRequest
 
         return [
             'paid_amount' => ['required', 'numeric', 'min:0.01', "max:{$remaining}"],
-            // C8: No future dates. H9: No dates before loan start.
             'paid_date' => ['required', 'date', 'before_or_equal:today', "after_or_equal:{$loanStartDate}"],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];

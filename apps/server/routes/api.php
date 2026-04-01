@@ -17,7 +17,6 @@ Route::get('/health', function () {
 Route::post('/register', RegisterController::class)->middleware('throttle:5,1');
 Route::post('/login', LoginController::class)->middleware('throttle:5,1');
 
-// M2: Global rate limit for authenticated endpoints
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', LogoutController::class);
     Route::get('/user', UserController::class);
@@ -25,12 +24,9 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/dashboard', DashboardController::class);
     Route::apiResource('loans', LoanController::class);
 
-    // H2: Stricter rate limit on payment endpoints
     Route::get('/installments/upcoming', [InstallmentController::class, 'upcoming']);
     Route::patch('/installments/{installment}/pay', [InstallmentController::class, 'markPaid'])
         ->middleware('throttle:10,1');
-
-    // C3: Payment reversal
     Route::patch('/installments/{installment}/reverse', [InstallmentController::class, 'reversePayment'])
         ->middleware('throttle:10,1');
 

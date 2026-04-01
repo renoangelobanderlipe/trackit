@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Installment\MarkPaidRequest;
 use App\Http\Resources\InstallmentResource;
 use App\Models\Installment;
-use Illuminate\Http\JsonResponse;
+use App\Models\Loan;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +29,7 @@ class InstallmentController extends Controller
     {
         return DB::transaction(function () use ($request, $installment) {
             $installment = Installment::lockForUpdate()->find($installment->id);
+            $loan = Loan::lockForUpdate()->find($installment->loan_id);
 
             $newPaidAmount = bcadd((string) $installment->paid_amount, (string) $request->validated('paid_amount'), 2);
             $status = bccomp($newPaidAmount, (string) $installment->amount, 2) >= 0 ? 'paid' : 'partial';
@@ -40,7 +41,6 @@ class InstallmentController extends Controller
                 'notes' => $request->validated('notes') ?? $installment->notes,
             ]);
 
-            $loan = $installment->loan;
             $allPaid = $loan->installments()->where('status', '!=', 'paid')->doesntExist();
 
             if ($allPaid) {
@@ -53,20 +53,15 @@ class InstallmentController extends Controller
         });
     }
 
-    /**
-     * C3: Reverse a payment on an installment.
-     */
-    public function reversePayment(Request $request, Installment $installment): InstallmentResource|JsonResponse
+    public function reversePayment(Request $request, Installment $installment): InstallmentResource
     {
         $loan = $installment->loan;
         abort_unless($loan->user_id === $request->user()->id, 403);
+        abort_if((float) $installment->paid_amount <= 0, 422, 'No payment to reverse.');
 
-        if ((float) $installment->paid_amount <= 0) {
-            return response()->json(['message' => 'No payment to reverse.'], 422);
-        }
-
-        return DB::transaction(function () use ($installment, $loan) {
+        return DB::transaction(function () use ($installment) {
             $installment = Installment::lockForUpdate()->find($installment->id);
+            $loan = Loan::lockForUpdate()->find($installment->loan_id);
 
             $installment->update([
                 'paid_amount' => '0.00',
@@ -74,7 +69,6 @@ class InstallmentController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Revert loan status if it was done
             if ($loan->status === 'done') {
                 $loan->update(['status' => 'in_progress']);
             }
