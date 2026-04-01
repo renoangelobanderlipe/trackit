@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateLoan;
 use App\Http\Requests\Loan\StoreLoanRequest;
 use App\Http\Requests\Loan\UpdateLoanRequest;
 use App\Http\Resources\LoanResource;
 use App\Models\Loan;
-use App\Services\InstallmentGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class LoanController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection|JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
         $query = $request->user()
             ->loans()
@@ -30,54 +31,38 @@ class LoanController extends Controller
         }
 
         $perPage = min((int) $request->query('per_page', 20), 50);
-        $loans = $query->paginate($perPage);
 
-        return LoanResource::collection($loans);
+        return LoanResource::collection($query->paginate($perPage));
     }
 
-    public function store(StoreLoanRequest $request, InstallmentGenerator $generator): JsonResponse
+    public function store(StoreLoanRequest $request, CreateLoan $action): JsonResponse
     {
-        $loan = DB::transaction(function () use ($request, $generator) {
-            $loan = $request->user()->loans()->create($request->validated());
+        $loan = $action->execute($request->user(), $request->validated());
 
-            $installments = $generator->generate($loan);
-            $loan->installments()->createMany($installments);
-
-            $sum = collect($installments)->reduce(fn ($carry, $i) => bcadd($carry, $i['amount'], 2), '0.00');
-            abort_if(bccomp($sum, (string) $loan->total_amount, 2) !== 0, 500, 'Installment sum mismatch');
-
-            return $loan;
-        });
-
-        $loan->load('installments');
-
-        return (new LoanResource($loan))
+        return (new LoanResource($loan->load('installments')))
             ->response()
             ->setStatusCode(201);
     }
 
     public function show(Request $request, Loan $loan): LoanResource
     {
-        abort_unless($loan->user_id === $request->user()->id, 403);
+        Gate::authorize('view', $loan);
 
-        $loan->load('installments');
-
-        return new LoanResource($loan);
+        return new LoanResource($loan->load('installments'));
     }
 
     public function update(UpdateLoanRequest $request, Loan $loan): LoanResource
     {
-        abort_unless($loan->user_id === $request->user()->id, 403);
+        Gate::authorize('update', $loan);
 
         $loan->update($request->validated());
-        $loan->load('installments');
 
-        return new LoanResource($loan);
+        return new LoanResource($loan->load('installments'));
     }
 
     public function destroy(Request $request, Loan $loan): Response
     {
-        abort_unless($loan->user_id === $request->user()->id, 403);
+        Gate::authorize('delete', $loan);
 
         DB::transaction(function () use ($loan) {
             $loan->installments()->delete();

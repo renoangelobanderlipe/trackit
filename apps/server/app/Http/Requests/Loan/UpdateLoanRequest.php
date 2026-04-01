@@ -4,6 +4,7 @@ namespace App\Http\Requests\Loan;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class UpdateLoanRequest extends FormRequest
 {
@@ -11,10 +12,11 @@ class UpdateLoanRequest extends FormRequest
     {
         $loan = $this->route('loan');
 
-        if ($loan->user_id !== $this->user()->id) {
+        if (! Gate::allows('update', $loan)) {
             return false;
         }
 
+        // Done loans cannot have their status changed
         if ($loan->status === 'done' && $this->has('status') && $this->input('status') !== 'done') {
             return false;
         }
