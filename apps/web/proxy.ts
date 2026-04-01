@@ -2,7 +2,13 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 const protectedPaths = ["/dashboard", "/loans", "/account"];
-const authPaths = ["/login", "/register", "/two-factor-challenge"];
+const authPaths = [
+  "/login",
+  "/register",
+  "/two-factor-challenge",
+  "/forgot-password",
+  "/reset-password",
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

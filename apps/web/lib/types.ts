@@ -39,6 +39,16 @@ export type InstallmentWithLoan = Installment & {
   };
 };
 
+export type MonthlyPayment = {
+  month: string;
+  total: string;
+};
+
+export type LoanBreakdown = {
+  title: string;
+  remaining: string;
+};
+
 export type DashboardData = {
   active_loans_count: number;
   overdue_count: number;
@@ -46,6 +56,8 @@ export type DashboardData = {
   total_paid: string;
   upcoming_payments: InstallmentWithLoan[];
   loans_summary: Loan[];
+  monthly_payments: MonthlyPayment[];
+  loan_breakdown: LoanBreakdown[];
 };
 
 export type CreateLoanPayload = {

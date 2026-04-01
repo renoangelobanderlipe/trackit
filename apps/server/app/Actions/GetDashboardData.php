@@ -35,6 +35,29 @@ class GetDashboardData
             ->where('due_date', '<', now()->toDateString())
             ->count();
 
+        $paidInstallments = Installment::query()
+            ->whereHas('loan', fn ($q) => $q->where('user_id', $user->id))
+            ->whereNotNull('paid_date')
+            ->where('paid_amount', '>', 0)
+            ->select(['paid_date', 'paid_amount'])
+            ->orderBy('paid_date', 'desc')
+            ->get();
+
+        $monthlyPayments = $paidInstallments
+            ->groupBy(fn ($i) => $i->paid_date->format('Y-m'))
+            ->map(fn ($group, $month) => [
+                'month' => $month,
+                'total' => number_format((float) $group->sum('paid_amount'), 2, '.', ''),
+            ])
+            ->take(6)
+            ->reverse()
+            ->values();
+
+        $loanBreakdown = $activeLoans->map(fn ($loan) => [
+            'title' => $loan->title,
+            'remaining' => number_format((float) $loan->total_amount - $loan->installments->sum('paid_amount'), 2, '.', ''),
+        ]);
+
         return [
             'active_loans_count' => $activeLoans->count(),
             'overdue_count' => $overdueCount,
@@ -42,6 +65,8 @@ class GetDashboardData
             'total_paid' => number_format((float) $totalPaid, 2, '.', ''),
             'upcoming_payments' => $upcomingPayments,
             'loans_summary' => $activeLoans,
+            'monthly_payments' => $monthlyPayments,
+            'loan_breakdown' => $loanBreakdown,
         ];
     }
 }

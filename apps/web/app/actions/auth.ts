@@ -83,6 +83,30 @@ export async function register(
   return result;
 }
 
+export async function forgotPassword(email: string) {
+  return rpcMutable<{ message: string }>("/forgot-password", {
+    method: "POST",
+    body: { email },
+  });
+}
+
+export async function resetPassword(
+  token: string,
+  email: string,
+  password: string,
+  passwordConfirmation: string,
+) {
+  return rpcMutable<{ message: string }>("/reset-password", {
+    method: "POST",
+    body: {
+      token,
+      email,
+      password,
+      password_confirmation: passwordConfirmation,
+    },
+  });
+}
+
 export async function getUser() {
   const { rpc } = await import("@/lib/rpc");
   return rpc<User>("/user");

@@ -23,6 +23,7 @@ import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getLoans,
@@ -56,24 +57,56 @@ export default function LoanListClient({
   initialMeta,
   savedFilters,
 }: Props) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loans, setLoans] = useState(initialLoans);
   const [meta, setMeta] = useState(initialMeta);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [search, setSearch] = useState("");
-  const [searchDebounced, setSearchDebounced] = useState("");
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [searchDebounced, setSearchDebounced] = useState(search);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
   const loadMoreRef = useRef<() => void>(() => {});
 
-  const [statusFilter, setStatusFilter] = useState(
-    savedFilters?.status ?? "all",
-  );
-  const [providerFilter, setProviderFilter] = useState(
-    savedFilters?.provider ?? "all",
-  );
-  const [dateFrom, setDateFrom] = useState(savedFilters?.dateFrom ?? "");
-  const [dateTo, setDateTo] = useState(savedFilters?.dateTo ?? "");
+  // Derive filters from URL params, fallback to saved filters
+  const statusFilter =
+    searchParams.get("status") ?? savedFilters?.status ?? "all";
+  const providerFilter =
+    searchParams.get("provider") ?? savedFilters?.provider ?? "all";
+  const dateFrom = searchParams.get("dateFrom") ?? savedFilters?.dateFrom ?? "";
+  const dateTo = searchParams.get("dateTo") ?? savedFilters?.dateTo ?? "";
+
+  function updateUrl(updates: Record<string, string>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (!value || value === "all") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    const qs = params.toString();
+    router.replace(pathname + (qs ? `?${qs}` : ""), { scroll: false });
+  }
+
+  function setStatusFilter(value: string) {
+    updateUrl({ status: value });
+  }
+
+  function setProviderFilter(value: string) {
+    updateUrl({ provider: value });
+  }
+
+  function setDateFrom(value: string) {
+    updateUrl({ dateFrom: value });
+  }
+
+  function setDateTo(value: string) {
+    updateUrl({ dateTo: value });
+  }
 
   const hasDateFilter = dateFrom && dateTo;
   const activeFilterCount =
@@ -87,11 +120,18 @@ export default function LoanListClient({
     ...new Set(loans.map((l) => l.provider).filter(Boolean)),
   ] as string[];
 
-  // Debounced search
+  // Debounced search — sync to URL after debounce
   useEffect(() => {
-    const timer = setTimeout(() => setSearchDebounced(search), 300);
+    const timer = setTimeout(() => {
+      setSearchDebounced(search);
+      const params = new URLSearchParams(searchParams.toString());
+      if (search) params.set("search", search);
+      else params.delete("search");
+      const qs = params.toString();
+      router.replace(pathname + (qs ? `?${qs}` : ""), { scroll: false });
+    }, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, searchParams, router, pathname]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -181,25 +221,23 @@ export default function LoanListClient({
       )
     : null;
 
-  function persistFilters(
-    s = statusFilter,
-    p = providerFilter,
-    df = dateFrom,
-    dt = dateTo,
-  ) {
+  function persistFilters(s?: string, p?: string, df?: string, dt?: string) {
     saveLoanFilters({
-      status: s,
-      provider: p,
-      dateFrom: df,
-      dateTo: dt,
+      status: s ?? statusFilter,
+      provider: p ?? providerFilter,
+      dateFrom: df ?? dateFrom,
+      dateTo: dt ?? dateTo,
     });
   }
 
   function clearAllFilters() {
-    setStatusFilter("all");
-    setProviderFilter("all");
-    setDateFrom("");
-    setDateTo("");
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("status");
+    params.delete("provider");
+    params.delete("dateFrom");
+    params.delete("dateTo");
+    const qs = params.toString();
+    router.replace(pathname + (qs ? `?${qs}` : ""), { scroll: false });
     persistFilters("all", "all", "", "");
   }
 
@@ -256,7 +294,7 @@ export default function LoanListClient({
               size="small"
               onDelete={() => {
                 setStatusFilter("all");
-                persistFilters("all", providerFilter, dateFrom, dateTo);
+                persistFilters("all");
               }}
               color="primary"
               variant="outlined"
@@ -268,7 +306,7 @@ export default function LoanListClient({
               size="small"
               onDelete={() => {
                 setProviderFilter("all");
-                persistFilters(statusFilter, "all", dateFrom, dateTo);
+                persistFilters(undefined, "all");
               }}
               color="primary"
               variant="outlined"
@@ -279,9 +317,8 @@ export default function LoanListClient({
               label={`${formatDateShort(dateFrom)} → ${formatDateShort(dateTo)}`}
               size="small"
               onDelete={() => {
-                setDateFrom("");
-                setDateTo("");
-                persistFilters(statusFilter, providerFilter, "", "");
+                updateUrl({ dateFrom: "", dateTo: "" });
+                persistFilters(undefined, undefined, "", "");
               }}
               color="primary"
               variant="outlined"
