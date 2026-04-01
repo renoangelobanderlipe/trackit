@@ -3,7 +3,6 @@
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
 import Collapse from "@mui/material/Collapse";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
@@ -23,12 +22,6 @@ const frequencies = [
   { value: "weekly", label: "Weekly" },
 ];
 
-const statusOptions = [
-  { value: "not_started", label: "Not Started" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "done", label: "Done" },
-];
-
 export default function LoanForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -40,7 +33,6 @@ export default function LoanForm() {
   const [dueDay1, setDueDay1] = useState("15");
   const [dueDay2, setDueDay2] = useState("25");
   const [startDate, setStartDate] = useState("");
-  const [status, setStatus] = useState("not_started");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
 
@@ -63,7 +55,6 @@ export default function LoanForm() {
         ? { due_days: [Number.parseInt(dueDay1), Number.parseInt(dueDay2)] }
         : {}),
       start_date: startDate,
-      status,
       notes: notes || undefined,
     });
 
@@ -230,45 +221,6 @@ export default function LoanForm() {
         onChange={(val) => setStartDate(val ? val.format("YYYY-MM-DD") : "")}
         sx={{ mb: 2, width: "100%" }}
       />
-
-      {/* Status chips */}
-      <Typography
-        variant="caption"
-        sx={{
-          fontWeight: 600,
-          mb: 1,
-          display: "block",
-          color: "text.secondary",
-          fontSize: "0.7rem",
-        }}
-      >
-        Status
-      </Typography>
-      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-        {statusOptions.map((s) => (
-          <Chip
-            key={s.value}
-            label={s.label}
-            size="small"
-            variant={status === s.value ? "filled" : "outlined"}
-            color={status === s.value ? "primary" : "default"}
-            onClick={() => setStatus(s.value)}
-            sx={{
-              flex: 1,
-              fontWeight: 600,
-              fontSize: "0.73rem",
-              height: 34,
-              borderRadius: 2,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              ...(status === s.value && {
-                boxShadow: "0 2px 8px rgba(13,148,136,0.3)",
-              }),
-              "&:hover": { transform: "translateY(-1px)" },
-            }}
-          />
-        ))}
-      </Box>
 
       <TextField
         label="Notes"

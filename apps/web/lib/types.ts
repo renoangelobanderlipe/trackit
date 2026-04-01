@@ -56,7 +56,6 @@ export type CreateLoanPayload = {
   payment_frequency: string;
   due_days?: number[];
   start_date: string;
-  status?: string;
   notes?: string;
 };
 

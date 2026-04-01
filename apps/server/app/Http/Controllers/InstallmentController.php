@@ -29,11 +29,10 @@ class InstallmentController extends Controller
 
     public function markPaid(MarkPaidRequest $request, Installment $installment): InstallmentResource
     {
+        // Authorization already validated by MarkPaidRequest::authorize()
         return DB::transaction(function () use ($request, $installment) {
             $installment = Installment::lockForUpdate()->find($installment->id);
             $loan = Loan::lockForUpdate()->find($installment->loan_id);
-
-            abort_unless($loan->user_id === $request->user()->id, 403);
 
             $newPaidAmount = bcadd((string) $installment->paid_amount, (string) $request->validated('paid_amount'), 2);
             $status = bccomp($newPaidAmount, (string) $installment->amount, 2) >= 0 ? 'paid' : 'partial';

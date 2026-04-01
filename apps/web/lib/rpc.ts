@@ -103,6 +103,9 @@ export async function rpcMutable<T>(
   const cookieStore = await cookies();
   const timeout = withTimeout(REQUEST_TIMEOUT);
 
+  // Read XSRF-TOKEN for CSRF protection on state-changing requests
+  const xsrfToken = cookieStore.get("XSRF-TOKEN")?.value;
+
   const res = await fetch(url, {
     method,
     headers: {
@@ -110,6 +113,7 @@ export async function rpcMutable<T>(
       Accept: "application/json",
       Referer: FRONTEND_URL,
       ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),

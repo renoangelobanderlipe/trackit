@@ -27,7 +27,6 @@ class StoreLoanRequest extends FormRequest
             'due_days.*' => ['integer', 'min:1', 'max:31'],
             'due_days.0' => ['lt:due_days.1'],
             'start_date' => ['required', 'date'],
-            'status' => ['sometimes', 'string', 'in:not_started,in_progress,done'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
