@@ -70,15 +70,6 @@ export async function rpc<T>(
 
   timeout.clear();
 
-  if (res.status === 401) {
-    try {
-      const cookieStore = await cookies();
-      cookieStore.delete("trackit_authed");
-    } catch {
-      // May fail in Server Component context — non-fatal
-    }
-  }
-
   if (!res.ok) {
     const text = await res.text();
     return {
@@ -142,7 +133,7 @@ export async function rpcMutable<T>(
       const eqIndex = nameValue.indexOf("=");
       if (eqIndex > 0) {
         const name = nameValue.slice(0, eqIndex).trim();
-        const value = decodeURIComponent(nameValue.slice(eqIndex + 1));
+        const value = nameValue.slice(eqIndex + 1);
         const isXsrf = name === "XSRF-TOKEN";
         cookieStore.set(name, value, {
           path: "/",
