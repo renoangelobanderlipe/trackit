@@ -31,6 +31,8 @@ class InstallmentController extends Controller
             $installment = Installment::lockForUpdate()->find($installment->id);
             $loan = Loan::lockForUpdate()->find($installment->loan_id);
 
+            abort_unless($loan->user_id === $request->user()->id, 403);
+
             $newPaidAmount = bcadd((string) $installment->paid_amount, (string) $request->validated('paid_amount'), 2);
             $status = bccomp($newPaidAmount, (string) $installment->amount, 2) >= 0 ? 'paid' : 'partial';
 
@@ -59,9 +61,11 @@ class InstallmentController extends Controller
         abort_unless($loan->user_id === $request->user()->id, 403);
         abort_if((float) $installment->paid_amount <= 0, 422, 'No payment to reverse.');
 
-        return DB::transaction(function () use ($installment) {
+        return DB::transaction(function () use ($request, $installment) {
             $installment = Installment::lockForUpdate()->find($installment->id);
             $loan = Loan::lockForUpdate()->find($installment->loan_id);
+
+            abort_unless($loan->user_id === $request->user()->id, 403);
 
             $installment->update([
                 'paid_amount' => '0.00',

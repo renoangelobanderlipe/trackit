@@ -19,8 +19,9 @@ export async function login(email: string, password: string) {
     const cookieStore = await cookies();
     cookieStore.set("trackit_authed", "1", {
       path: "/",
-      maxAge: 7200,
+      httpOnly: true,
       sameSite: "lax",
+      maxAge: 7200,
     });
   }
 
@@ -47,8 +48,9 @@ export async function register(
     const cookieStore = await cookies();
     cookieStore.set("trackit_authed", "1", {
       path: "/",
-      maxAge: 7200,
+      httpOnly: true,
       sameSite: "lax",
+      maxAge: 7200,
     });
   }
 

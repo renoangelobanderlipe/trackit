@@ -20,6 +20,7 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json($user, 201);
     }

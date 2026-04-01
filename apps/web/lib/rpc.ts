@@ -128,11 +128,13 @@ export async function rpcMutable<T>(
       if (eqIndex > 0) {
         const name = nameValue.slice(0, eqIndex).trim();
         const value = decodeURIComponent(nameValue.slice(eqIndex + 1));
+        const isXsrf = name === "XSRF-TOKEN";
         cookieStore.set(name, value, {
           path: "/",
-          httpOnly: name !== "XSRF-TOKEN",
+          httpOnly: !isXsrf, // XSRF-TOKEN must be readable by JS for double-submit pattern
           sameSite: "lax",
-          maxAge: 7200,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: Number(process.env.SESSION_LIFETIME ?? 120) * 60,
         });
       }
     } catch {
@@ -142,7 +144,11 @@ export async function rpcMutable<T>(
 
   if (!res.ok) {
     const text = await res.text();
-    console.log(`[rpcMutable] ${method} ${path} error: ${text.slice(0, 300)}`);
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `[rpcMutable] ${method} ${path} error: ${text.slice(0, 300)}`,
+      );
+    }
     return {
       error: text || res.statusText,
       status: res.status,

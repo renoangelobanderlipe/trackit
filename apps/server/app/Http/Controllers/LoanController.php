@@ -58,6 +58,8 @@ class LoanController extends Controller
 
     public function update(UpdateLoanRequest $request, Loan $loan): LoanResource
     {
+        abort_unless($loan->user_id === $request->user()->id, 403);
+
         $loan->update($request->validated());
         $loan->load('installments');
 

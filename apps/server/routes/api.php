@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\LoanController;
+use App\Http\Requests\Loan\SaveLoanFiltersRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,8 +32,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         ->middleware('throttle:10,1');
 
     Route::get('/loan-filters', fn (Request $request) => response()->json($request->user()->loan_filters ?? []));
-    Route::put('/loan-filters', function (Request $request) {
-        $request->user()->update(['loan_filters' => $request->all()]);
+    Route::put('/loan-filters', function (SaveLoanFiltersRequest $request) {
+        $request->user()->update(['loan_filters' => $request->validated()]);
 
         return response()->json($request->user()->loan_filters);
     });

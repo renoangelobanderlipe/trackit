@@ -10,8 +10,8 @@ test('user can register with valid data', function () {
     $response = $this->postJson('/api/register', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'Password1',
+        'password_confirmation' => 'Password1',
     ]);
 
     $response->assertStatus(201)
@@ -34,8 +34,8 @@ test('registration fails with duplicate email', function () {
     $response = $this->postJson('/api/register', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
+        'password' => 'Password1',
+        'password_confirmation' => 'Password1',
     ]);
 
     $response->assertStatus(422)

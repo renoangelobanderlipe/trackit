@@ -7,8 +7,10 @@ const authPaths = ["/login", "/register"];
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check for auth marker cookie (set by auth-client after login/register)
-  const hasSession = request.cookies.has("trackit_authed");
+  // Check for auth marker cookie (httpOnly, set by server actions after login/register)
+  const hasSession =
+    request.cookies.has("trackit_authed") &&
+    request.cookies.has("laravel_session");
 
   const isProtected = protectedPaths.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
