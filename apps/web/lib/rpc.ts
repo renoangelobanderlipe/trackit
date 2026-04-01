@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const LARAVEL_URL = process.env.LARAVEL_URL ?? "http://localhost:8000";
 const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -22,10 +23,10 @@ type RpcResponse<T> =
 
 const REQUEST_TIMEOUT = 15000; // 15 seconds
 
-function withTimeout(ms: number): { signal: AbortSignal } {
+function withTimeout(ms: number): { signal: AbortSignal; clear: () => void } {
   const controller = new AbortController();
-  setTimeout(() => controller.abort(), ms);
-  return { signal: controller.signal };
+  const id = setTimeout(() => controller.abort(), ms);
+  return { signal: controller.signal, clear: () => clearTimeout(id) };
 }
 
 /**
@@ -52,6 +53,7 @@ export async function rpc<T>(
 
   const url = `${LARAVEL_URL}/api${path}`;
   const cookieHeader = await buildCookieHeader();
+  const timeout = withTimeout(REQUEST_TIMEOUT);
 
   const res = await fetch(url, {
     method,
@@ -64,8 +66,14 @@ export async function rpc<T>(
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
     cache: "no-store",
-    ...withTimeout(REQUEST_TIMEOUT),
+    signal: timeout.signal,
   });
+
+  timeout.clear();
+
+  if (res.status === 401) {
+    redirect("/login");
+  }
 
   if (!res.ok) {
     const text = await res.text();
@@ -98,6 +106,7 @@ export async function rpcMutable<T>(
   const cookieHeader = await buildCookieHeader();
 
   const cookieStore = await cookies();
+  const timeout = withTimeout(REQUEST_TIMEOUT);
 
   const res = await fetch(url, {
     method,
@@ -109,8 +118,10 @@ export async function rpcMutable<T>(
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
-    ...withTimeout(REQUEST_TIMEOUT),
+    signal: timeout.signal,
   });
+
+  timeout.clear();
 
   // Store response cookies on the Next.js domain for future rpc() calls
   let setCookieHeaders: string[] = [];

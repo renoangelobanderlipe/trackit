@@ -5,7 +5,7 @@ import LoanListClient from "./components/LoanListClient";
 
 export default async function LoansPage() {
   const [loansResult, filtersResult] = await Promise.all([
-    getLoans(),
+    getLoans(1),
     getLoanFilters(),
   ]);
 
@@ -22,7 +22,8 @@ export default async function LoansPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 3 }}>
       <LoanListClient
-        loans={loansResult.data.data}
+        initialLoans={loansResult.data.data}
+        initialMeta={loansResult.data.meta}
         savedFilters={savedFilters}
       />
     </Container>

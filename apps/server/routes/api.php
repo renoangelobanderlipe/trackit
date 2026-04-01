@@ -30,6 +30,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         ->middleware('throttle:10,1');
     Route::patch('/installments/{installment}/reverse', [InstallmentController::class, 'reversePayment'])
         ->middleware('throttle:10,1');
+    Route::post('/loans/{loan}/regenerate-installments', [InstallmentController::class, 'regenerate'])
+        ->middleware('throttle:5,1');
 
     Route::get('/loan-filters', fn (Request $request) => response()->json($request->user()->loan_filters ?? []));
     Route::put('/loan-filters', function (SaveLoanFiltersRequest $request) {

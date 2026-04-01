@@ -15,13 +15,22 @@ use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
-        $loans = $request->user()
+        $query = $request->user()
             ->loans()
             ->with('installments')
-            ->latest()
-            ->get();
+            ->latest();
+
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'ilike', "%{$search}%")
+                    ->orWhere('provider', 'ilike', "%{$search}%");
+            });
+        }
+
+        $perPage = min((int) $request->query('per_page', 20), 50);
+        $loans = $query->paginate($perPage);
 
         return LoanResource::collection($loans);
     }
@@ -70,8 +79,10 @@ class LoanController extends Controller
     {
         abort_unless($loan->user_id === $request->user()->id, 403);
 
-        $loan->installments()->delete();
-        $loan->delete();
+        DB::transaction(function () use ($loan) {
+            $loan->installments()->delete();
+            $loan->delete();
+        });
 
         return response()->noContent();
     }

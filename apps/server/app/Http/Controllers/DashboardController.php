@@ -26,8 +26,15 @@ class DashboardController extends Controller
             ->with('loan')
             ->get();
 
+        $overdueCount = Installment::query()
+            ->whereHas('loan', fn ($q) => $q->where('user_id', $user->id)->where('status', '!=', 'done'))
+            ->where('status', '!=', 'paid')
+            ->where('due_date', '<', now()->toDateString())
+            ->count();
+
         return response()->json([
             'active_loans_count' => $activeLoans->count(),
+            'overdue_count' => $overdueCount,
             'total_owed' => number_format((float) $totalOwed, 2, '.', ''),
             'total_paid' => number_format((float) $totalPaid, 2, '.', ''),
             'upcoming_payments' => InstallmentResource::collection($upcomingPayments),

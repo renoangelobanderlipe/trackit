@@ -4,6 +4,7 @@ import {
   Cancel01Icon,
   FilterHorizontalIcon,
   Invoice01Icon,
+  Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Badge from "@mui/material/Badge";
@@ -13,23 +14,29 @@ import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardContent from "@mui/material/CardContent";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useState } from "react";
-import { type LoanFilters, saveLoanFilters } from "@/app/actions/loans";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  getLoans,
+  type LoanFilters,
+  saveLoanFilters,
+} from "@/app/actions/loans";
 import AnimatedProgress from "@/components/animations/AnimatedProgress";
-import FadeIn from "@/components/animations/FadeIn";
 import PulsingFab from "@/components/animations/PulsingFab";
 import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/animations/StaggerList";
 import { formatCurrency, formatDateShort } from "@/lib/format";
-import type { LoanDetail } from "@/lib/types";
+import type { LoanDetail, PaginatedResponse } from "@/lib/types";
 
 const statuses = [
   { value: "all", label: "All" },
@@ -39,12 +46,25 @@ const statuses = [
 ];
 
 type Props = {
-  loans: LoanDetail[];
+  initialLoans: LoanDetail[];
+  initialMeta: PaginatedResponse<LoanDetail>["meta"];
   savedFilters?: LoanFilters;
 };
 
-export default function LoanListClient({ loans, savedFilters }: Props) {
+export default function LoanListClient({
+  initialLoans,
+  initialMeta,
+  savedFilters,
+}: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loans, setLoans] = useState(initialLoans);
+  const [meta, setMeta] = useState(initialMeta);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searchDebounced, setSearchDebounced] = useState("");
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+  const loadMoreRef = useRef<() => void>(() => {});
 
   const [statusFilter, setStatusFilter] = useState(
     savedFilters?.status ?? "all",
@@ -61,9 +81,64 @@ export default function LoanListClient({ loans, savedFilters }: Props) {
     (providerFilter !== "all" ? 1 : 0) +
     (hasDateFilter ? 1 : 0);
 
+  const hasMorePages = meta.current_page < meta.last_page;
+
   const providers = [
     ...new Set(loans.map((l) => l.provider).filter(Boolean)),
   ] as string[];
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchDebounced(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    async function fetchSearch() {
+      const result = await getLoans(1, searchDebounced || undefined);
+      if (result.ok) {
+        setLoans(result.data.data);
+        setMeta(result.data.meta);
+      }
+    }
+    fetchSearch();
+  }, [searchDebounced]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMorePages) return;
+    setLoadingMore(true);
+    const result = await getLoans(
+      meta.current_page + 1,
+      searchDebounced || undefined,
+    );
+    if (result.ok) {
+      setLoans((prev) => [...prev, ...result.data.data]);
+      setMeta(result.data.meta);
+    }
+    setLoadingMore(false);
+  }, [loadingMore, hasMorePages, meta.current_page, searchDebounced]);
+
+  // Keep ref in sync so observer callback is stable
+  loadMoreRef.current = loadMore;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) loadMoreRef.current();
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   // Apply filters
   let baseFiltered = loans;
@@ -130,13 +205,12 @@ export default function LoanListClient({ loans, savedFilters }: Props) {
 
   return (
     <>
-      {/* Header */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          mb: 2,
+          mb: 1.5,
         }}
       >
         <Typography variant="h5">Loans</Typography>
@@ -150,6 +224,28 @@ export default function LoanListClient({ loans, savedFilters }: Props) {
           </Badge>
         </IconButton>
       </Box>
+
+      <TextField
+        placeholder="Search loans..."
+        size="small"
+        fullWidth
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <HugeiconsIcon
+                  icon={Search01Icon}
+                  size={18}
+                  color="var(--mui-palette-text-disabled)"
+                />
+              </InputAdornment>
+            ),
+          },
+        }}
+        sx={{ mb: 2 }}
+      />
 
       {/* Active filter chips */}
       {activeFilterCount > 0 && (
@@ -364,6 +460,16 @@ export default function LoanListClient({ loans, savedFilters }: Props) {
           );
         })}
       </StaggerContainer>
+
+      {/* Infinite scroll sentinel */}
+      {hasMorePages && (
+        <Box
+          ref={sentinelRef}
+          sx={{ display: "flex", justifyContent: "center", py: 2 }}
+        >
+          {loadingMore && <CircularProgress size={24} />}
+        </Box>
+      )}
 
       <PulsingFab href="/loans/new" />
 

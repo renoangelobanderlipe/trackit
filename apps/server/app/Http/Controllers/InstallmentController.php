@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Installment\MarkPaidRequest;
 use App\Http\Resources\InstallmentResource;
+use App\Http\Resources\LoanResource;
 use App\Models\Installment;
 use App\Models\Loan;
+use App\Services\InstallmentGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -61,11 +63,9 @@ class InstallmentController extends Controller
         abort_unless($loan->user_id === $request->user()->id, 403);
         abort_if((float) $installment->paid_amount <= 0, 422, 'No payment to reverse.');
 
-        return DB::transaction(function () use ($request, $installment) {
+        return DB::transaction(function () use ($installment) {
             $installment = Installment::lockForUpdate()->find($installment->id);
             $loan = Loan::lockForUpdate()->find($installment->loan_id);
-
-            abort_unless($loan->user_id === $request->user()->id, 403);
 
             $installment->update([
                 'paid_amount' => '0.00',
@@ -78,6 +78,40 @@ class InstallmentController extends Controller
             }
 
             return new InstallmentResource($installment);
+        });
+    }
+
+    public function regenerate(Request $request, Loan $loan, InstallmentGenerator $generator): LoanResource
+    {
+        abort_unless($loan->user_id === $request->user()->id, 403);
+
+        return DB::transaction(function () use ($loan, $generator) {
+            $loan->installments()->where('status', '!=', 'paid')->delete();
+
+            $paidCount = $loan->installments()->where('status', 'paid')->count();
+            $remainingCount = $loan->num_installments - $paidCount;
+
+            if ($remainingCount > 0) {
+                $paidTotal = $loan->installments()->where('status', 'paid')->sum('paid_amount');
+                $remainingAmount = bcsub((string) $loan->total_amount, (string) $paidTotal, 2);
+
+                $tempLoan = clone $loan;
+                $tempLoan->total_amount = $remainingAmount;
+                $tempLoan->num_installments = $remainingCount;
+                $tempLoan->start_date = now();
+
+                $newInstallments = $generator->generate($tempLoan);
+
+                foreach ($newInstallments as $i => &$inst) {
+                    $inst['label'] = ($paidCount + $i + 1).'/'.$loan->num_installments;
+                }
+
+                $loan->installments()->createMany($newInstallments);
+            }
+
+            $loan->load('installments');
+
+            return new LoanResource($loan);
         });
     }
 }

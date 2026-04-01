@@ -130,6 +130,29 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                     <CountUp value={totalPaid} prefix="₱" delay={0.3} />
                   </Typography>
                 </Box>
+                {data.overdue_count > 0 && (
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255,200,200,0.8)",
+                        fontSize: "0.6rem",
+                      }}
+                    >
+                      Overdue
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.85rem",
+                        lineHeight: 1.2,
+                        color: "#fca5a5",
+                      }}
+                    >
+                      {data.overdue_count}
+                    </Typography>
+                  </Box>
+                )}
                 <Box>
                   <Typography
                     variant="caption"

@@ -41,6 +41,7 @@ export type InstallmentWithLoan = Installment & {
 
 export type DashboardData = {
   active_loans_count: number;
+  overdue_count: number;
   total_owed: string;
   total_paid: string;
   upcoming_payments: InstallmentWithLoan[];
@@ -57,6 +58,19 @@ export type CreateLoanPayload = {
   start_date: string;
   status?: string;
   notes?: string;
+};
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  links: {
+    next: string | null;
+  };
 };
 
 export type MarkPaidPayload = {

@@ -9,7 +9,11 @@ export type User = {
   email: string;
 };
 
-export async function login(email: string, password: string) {
+export async function login(
+  email: string,
+  password: string,
+  rememberMe = false,
+) {
   const result = await rpcMutable<User>("/login", {
     method: "POST",
     body: { email, password },
@@ -21,7 +25,7 @@ export async function login(email: string, password: string) {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 7200,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 : 28800, // 30 days or 8 hours
     });
   }
 
@@ -50,7 +54,7 @@ export async function register(
       path: "/",
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 7200,
+      maxAge: 28800,
     });
   }
 
