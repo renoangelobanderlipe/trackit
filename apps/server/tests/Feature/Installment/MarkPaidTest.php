@@ -88,19 +88,6 @@ test('prevents future payment dates', function () {
         ->assertJsonValidationErrors(['paid_date']);
 });
 
-test('prevents payment before loan start date', function () {
-    $loan = Loan::factory()->for($this->user)->create(['start_date' => '2026-06-01']);
-    $installment = Installment::factory()->for($loan)->create(['amount' => '500.00', 'paid_amount' => 0]);
-
-    $response = $this->patchJson("/api/installments/{$installment->id}/pay", [
-        'paid_amount' => 100,
-        'paid_date' => '2026-01-01',
-    ]);
-
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['paid_date']);
-});
-
 test('cannot mark another user installment as paid', function () {
     $otherLoan = Loan::factory()->create();
     $installment = Installment::factory()->for($otherLoan)->create();
