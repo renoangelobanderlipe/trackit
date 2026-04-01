@@ -7,7 +7,7 @@ import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import { useState } from "react";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { decimalSubtract, formatCurrency, formatDate } from "@/lib/format";
 import type { Installment } from "@/lib/types";
 import PaymentDialog from "./PaymentDialog";
 
@@ -26,9 +26,7 @@ export default function InstallmentList({
           const isPaid = inst.status === "paid";
           const isOverdue = inst.is_overdue;
           const isPartial = inst.status === "partial";
-          const remaining =
-            Number.parseFloat(inst.amount) -
-            Number.parseFloat(inst.paid_amount);
+          const remaining = decimalSubtract(inst.amount, inst.paid_amount);
 
           return (
             <Box
@@ -126,7 +124,7 @@ export default function InstallmentList({
                     {isPaid
                       ? `Paid ${inst.paid_date ? formatDate(inst.paid_date) : ""}`
                       : isPartial
-                        ? `${formatCurrency(inst.paid_amount)} paid · ${formatCurrency(remaining)} left`
+                        ? `${formatCurrency(inst.paid_amount)} paid · ${formatCurrency(Number.parseFloat(remaining))} left`
                         : formatDate(inst.due_date)}
                   </Typography>
                 </Box>

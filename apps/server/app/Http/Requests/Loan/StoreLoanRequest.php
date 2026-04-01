@@ -20,7 +20,7 @@ class StoreLoanRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'provider' => ['nullable', 'string', 'max:255'],
-            'total_amount' => ['required', 'numeric', 'min:0.01', 'max:99999999.99'],
+            'total_amount' => ['required', 'numeric', 'min:1', 'max:99999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
             'num_installments' => ['required', 'integer', 'min:1', 'max:360'],
             'payment_frequency' => ['required', 'string', 'in:monthly,weekly,biweekly,twice_a_month'],
             'due_days' => ['required_if:payment_frequency,twice_a_month', 'array', 'size:2'],

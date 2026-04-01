@@ -37,6 +37,16 @@ export function formatCurrency(value: string | number): string {
 }
 
 /**
+ * Decimal-safe subtraction for currency strings.
+ * Avoids floating point errors (e.g., 100 - 0.01 = 99.99, not 99.99000000000001).
+ */
+export function decimalSubtract(a: string, b: string): string {
+  const fa = Math.round(Number.parseFloat(a) * 100);
+  const fb = Math.round(Number.parseFloat(b) * 100);
+  return ((fa - fb) / 100).toFixed(2);
+}
+
+/**
  * Parse a Laravel error response string into a user-friendly message.
  */
 export function parseApiError(error: string): string {

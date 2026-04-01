@@ -9,7 +9,18 @@ class UpdateLoanRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->route('loan')->user_id === $this->user()->id;
+        $loan = $this->route('loan');
+
+        if ($loan->user_id !== $this->user()->id) {
+            return false;
+        }
+
+        // H3/M5: Done loans are locked — only notes can be edited
+        if ($loan->status === 'done' && $this->has('status') && $this->input('status') !== 'done') {
+            return false;
+        }
+
+        return true;
     }
 
     /**

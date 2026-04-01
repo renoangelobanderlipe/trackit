@@ -17,3 +17,9 @@ export async function markInstallmentPaid(id: string, data: MarkPaidPayload) {
     body: data,
   });
 }
+
+export async function reversePayment(id: string) {
+  return rpcMutable<{ data: Installment }>(`/installments/${id}/reverse`, {
+    method: "PATCH",
+  });
+}

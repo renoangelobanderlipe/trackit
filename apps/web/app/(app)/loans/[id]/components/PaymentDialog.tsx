@@ -16,7 +16,7 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { markInstallmentPaid } from "@/app/actions/installments";
-import { formatCurrency, parseApiError } from "@/lib/format";
+import { decimalSubtract, formatCurrency, parseApiError } from "@/lib/format";
 import type { Installment } from "@/lib/types";
 
 type Props = {
@@ -27,17 +27,19 @@ type Props = {
 
 export default function PaymentDialog({ installment, open, onClose }: Props) {
   const router = useRouter();
-  const remaining =
-    Number.parseFloat(installment.amount) -
-    Number.parseFloat(installment.paid_amount);
-  const [amount, setAmount] = useState(remaining.toFixed(2));
+  const remaining = decimalSubtract(
+    installment.amount,
+    installment.paid_amount,
+  );
+  const [amount, setAmount] = useState(remaining);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
-  const isFullPayment = Number.parseFloat(amount) >= remaining;
+  const isFullPayment =
+    Number.parseFloat(amount) >= Number.parseFloat(remaining);
 
   async function handleSubmit() {
     setError("");

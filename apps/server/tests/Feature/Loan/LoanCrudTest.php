@@ -59,7 +59,8 @@ test('can delete own loan', function () {
     $response = $this->deleteJson("/api/loans/{$loan->id}");
 
     $response->assertNoContent();
-    $this->assertDatabaseMissing('loans', ['id' => $loan->id]);
+    // Soft deleted — row exists but has deleted_at set
+    $this->assertSoftDeleted('loans', ['id' => $loan->id]);
 });
 
 test('cannot delete another user loan', function () {

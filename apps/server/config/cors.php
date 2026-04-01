@@ -4,9 +4,10 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    // M1: Restrict to specific HTTP methods
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => array_filter([env('FRONTEND_URL', 'http://localhost:3000')]),
 
     'allowed_origins_patterns' => [],
 

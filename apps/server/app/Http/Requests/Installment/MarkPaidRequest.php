@@ -19,10 +19,12 @@ class MarkPaidRequest extends FormRequest
     {
         $installment = $this->route('installment');
         $remaining = bcsub((string) $installment->amount, (string) $installment->paid_amount, 2);
+        $loanStartDate = $installment->loan->start_date->toDateString();
 
         return [
             'paid_amount' => ['required', 'numeric', 'min:0.01', "max:{$remaining}"],
-            'paid_date' => ['required', 'date'],
+            // C8: No future dates. H9: No dates before loan start.
+            'paid_date' => ['required', 'date', 'before_or_equal:today', "after_or_equal:{$loanStartDate}"],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -34,6 +36,8 @@ class MarkPaidRequest extends FormRequest
     {
         return [
             'paid_amount.max' => 'Payment cannot exceed the remaining balance.',
+            'paid_date.before_or_equal' => 'Payment date cannot be in the future.',
+            'paid_date.after_or_equal' => 'Payment date cannot be before the loan start date.',
         ];
     }
 }
