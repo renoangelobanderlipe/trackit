@@ -6,9 +6,10 @@ import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import MuiLink from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Link from "next/link";
+import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { login } from "@/app/actions/auth";
@@ -128,12 +129,14 @@ export default function LoginPage() {
 
       <Typography variant="body2" align="center" color="text.secondary">
         Don&apos;t have an account?{" "}
-        <Link
+        <MuiLink
+          component={NextLink}
           href="/register"
-          style={{ color: "#0d9488", fontWeight: 600, textDecoration: "none" }}
+          color="primary"
+          sx={{ fontWeight: 600, textDecoration: "none" }}
         >
           Create one
-        </Link>
+        </MuiLink>
       </Typography>
     </Box>
   );

@@ -198,7 +198,7 @@ export default function AuthLayout({
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          bgcolor: "#fafbfc",
+          bgcolor: "background.default",
         }}
       >
         <Box
