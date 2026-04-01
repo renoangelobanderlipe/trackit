@@ -1,0 +1,41 @@
+frontend:
+  - changed-files:
+      - any-glob-to-any-file: "apps/web/**"
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file: "apps/server/**"
+
+devops:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "apps/server/tests/**"
+          - "**/*.test.*"
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "apps/server/config/**"
+          - "apps/web/next.config.ts"
+          - "biome.json"
+          - "tsconfig.json"
+
+database:
+  - changed-files:
+      - any-glob-to-any-file: "apps/server/database/**"
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "apps/web/app/**/*.tsx"
+          - "apps/web/components/**"
+          - "apps/web/app/theme.ts"
+          - "apps/web/app/globals.css"
