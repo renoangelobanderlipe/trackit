@@ -103,8 +103,34 @@ export async function rpcMutable<T>(
   const cookieStore = await cookies();
   const timeout = withTimeout(REQUEST_TIMEOUT);
 
-  // Read XSRF-TOKEN for CSRF protection on state-changing requests
-  const xsrfToken = cookieStore.get("XSRF-TOKEN")?.value;
+  // Fetch fresh CSRF cookie before state-changing requests
+  const csrfRes = await fetch(`${LARAVEL_URL}/sanctum/csrf-cookie`, {
+    headers: { Referer: FRONTEND_URL, Cookie: cookieHeader },
+  });
+
+  // Parse CSRF response cookies into a map for the main request
+  const csrfCookieMap: Record<string, string> = {};
+  const csrfSetCookies = csrfRes.headers.getSetCookie?.() ?? [];
+  for (const sc of csrfSetCookies) {
+    const [nv] = sc.split(";");
+    const eq = nv.indexOf("=");
+    if (eq > 0) {
+      csrfCookieMap[nv.slice(0, eq).trim()] = nv.slice(eq + 1);
+    }
+  }
+
+  // XSRF-TOKEN must be URL-decoded for the header
+  const xsrfToken = csrfCookieMap["XSRF-TOKEN"]
+    ? decodeURIComponent(csrfCookieMap["XSRF-TOKEN"])
+    : undefined;
+
+  // Combine existing cookies with fresh CSRF cookies
+  const csrfCookiePairs = Object.entries(csrfCookieMap)
+    .map(([k, v]) => `${k}=${v}`)
+    .join("; ");
+  const combinedCookieHeader = [cookieHeader, csrfCookiePairs]
+    .filter(Boolean)
+    .join("; ");
 
   const res = await fetch(url, {
     method,
@@ -112,7 +138,7 @@ export async function rpcMutable<T>(
       "Content-Type": "application/json",
       Accept: "application/json",
       Referer: FRONTEND_URL,
-      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      ...(combinedCookieHeader ? { Cookie: combinedCookieHeader } : {}),
       ...(xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {}),
       ...headers,
     },
