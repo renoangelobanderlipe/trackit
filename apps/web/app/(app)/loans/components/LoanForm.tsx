@@ -37,7 +37,7 @@ export default function LoanForm() {
   const [error, setError] = useState("");
 
   const amount = Number.parseFloat(totalAmount) || 0;
-  const count = Number.parseInt(numInstallments) || 0;
+  const count = Number.parseInt(numInstallments, 10) || 0;
   const perInstallment = count > 0 ? amount / count : 0;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,10 +49,15 @@ export default function LoanForm() {
       title,
       provider: provider || undefined,
       total_amount: Number.parseFloat(totalAmount),
-      num_installments: Number.parseInt(numInstallments),
+      num_installments: Number.parseInt(numInstallments, 10),
       payment_frequency: frequency,
       ...(frequency === "twice_a_month"
-        ? { due_days: [Number.parseInt(dueDay1), Number.parseInt(dueDay2)] }
+        ? {
+            due_days: [
+              Number.parseInt(dueDay1, 10),
+              Number.parseInt(dueDay2, 10),
+            ],
+          }
         : {}),
       start_date: startDate,
       notes: notes || undefined,

@@ -62,9 +62,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={geistSans.variable}>
       <body>
-        <Providers initialTheme={themeCookie ?? "system"}>
-          {children}
-        </Providers>
+        <Providers initialTheme={themeCookie ?? "system"}>{children}</Providers>
       </body>
     </html>
   );

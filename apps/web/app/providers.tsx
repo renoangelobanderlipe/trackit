@@ -58,7 +58,13 @@ export default function Providers({ initialTheme, children }: Props) {
 
   const setMode = useCallback((newMode: ThemeMode) => {
     setModeState(newMode);
-    document.cookie = `theme=${newMode}; path=/; max-age=${365 * 24 * 60 * 60}; SameSite=Lax`;
+    cookieStore.set({
+      name: "theme",
+      value: newMode,
+      path: "/",
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    });
   }, []);
 
   const theme = useMemo(() => createAppTheme(resolvedMode), [resolvedMode]);
