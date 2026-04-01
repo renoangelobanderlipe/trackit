@@ -28,11 +28,12 @@ export function formatDateShort(dateStr: string): string {
  */
 export function formatCurrency(value: string | number): string {
   const num = typeof value === "string" ? Number.parseFloat(value) : value;
+  const hasDecimals = num % 1 !== 0;
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
+    maximumFractionDigits: hasDecimals ? 2 : 0,
   }).format(num);
 }
 
