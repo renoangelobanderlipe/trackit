@@ -22,6 +22,7 @@ import {
   updateTheme,
 } from "@/app/actions/account";
 import { logout } from "@/app/actions/auth";
+import { useThemeMode } from "@/app/providers";
 import { parseApiError } from "@/lib/format";
 
 type User = {
@@ -56,7 +57,7 @@ export default function AccountClient({ user }: { user: User }) {
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Theme
-  const [theme, setTheme] = useState(user.theme_preference ?? "system");
+  const { mode: theme, setMode: setTheme } = useThemeMode();
 
   // Delete
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -98,8 +99,9 @@ export default function AccountClient({ user }: { user: User }) {
   }
 
   async function handleThemeChange(value: string) {
-    setTheme(value);
-    await updateTheme(value as "light" | "dark" | "system");
+    const mode = value as "light" | "dark" | "system";
+    setTheme(mode);
+    await updateTheme(mode);
   }
 
   async function handleDelete() {
