@@ -3,7 +3,6 @@
 namespace App\Actions;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -22,14 +21,13 @@ class DeleteAccount
         }
 
         DB::transaction(function () use ($user) {
-            $user->loans->each(function ($loan) {
-                $loan->installments()->delete();
-                $loan->delete();
-            });
+            $user->loans()
+                ->each(function ($loan) {
+                    $loan->installments()->delete();
+                    $loan->delete();
+                });
 
             $user->delete();
         });
-
-        Auth::guard('web')->logout();
     }
 }

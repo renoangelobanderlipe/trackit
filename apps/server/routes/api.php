@@ -34,10 +34,14 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/loans/{loan}/regenerate-installments', [InstallmentController::class, 'regenerate'])
         ->middleware('throttle:5,1');
 
-    Route::put('/user/profile', [AccountController::class, 'updateProfile']);
-    Route::put('/user/password', [AccountController::class, 'changePassword']);
-    Route::put('/user/theme', [AccountController::class, 'updateTheme']);
-    Route::delete('/user', [AccountController::class, 'destroy']);
+    Route::put('/user/profile', [AccountController::class, 'updateProfile'])
+        ->middleware('throttle:10,1');
+    Route::put('/user/password', [AccountController::class, 'changePassword'])
+        ->middleware('throttle:5,1');
+    Route::put('/user/theme', [AccountController::class, 'updateTheme'])
+        ->middleware('throttle:10,1');
+    Route::delete('/user', [AccountController::class, 'destroy'])
+        ->middleware('throttle:3,1');
 
     Route::get('/loan-filters', fn (Request $request) => response()->json($request->user()->loan_filters ?? []));
     Route::put('/loan-filters', function (SaveLoanFiltersRequest $request) {

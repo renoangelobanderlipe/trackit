@@ -21,7 +21,6 @@ import {
   updateProfile,
   updateTheme,
 } from "@/app/actions/account";
-import { logout } from "@/app/actions/auth";
 import { useThemeMode } from "@/app/providers";
 import { parseApiError } from "@/lib/format";
 
@@ -113,7 +112,6 @@ export default function AccountClient({ user }: { user: User }) {
       setDeleteErr(parseApiError(result.error));
       return;
     }
-    await logout();
     router.push("/login");
   }
 
@@ -141,7 +139,8 @@ export default function AccountClient({ user }: { user: User }) {
                 height: 52,
                 fontSize: "1.1rem",
                 fontWeight: 700,
-                background: "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+                background: (t) =>
+                  `linear-gradient(135deg, ${t.palette.primary.main} 0%, ${t.palette.primary.dark} 100%)`,
               }}
             >
               {initials}
@@ -181,7 +180,12 @@ export default function AccountClient({ user }: { user: User }) {
           <Button
             variant="contained"
             fullWidth
-            disabled={profileLoading || (!name && !email)}
+            disabled={
+              profileLoading ||
+              !name ||
+              !email ||
+              (name === user.name && email === user.email)
+            }
             onClick={handleProfileSave}
           >
             {profileLoading ? "Saving..." : "Save Changes"}
@@ -215,6 +219,12 @@ export default function AccountClient({ user }: { user: User }) {
             fullWidth
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            error={!!confirmPassword && confirmPassword !== newPassword}
+            helperText={
+              confirmPassword && confirmPassword !== newPassword
+                ? "Passwords do not match"
+                : undefined
+            }
             sx={{ mb: 2 }}
           />
           {passwordMsg && (
@@ -234,7 +244,8 @@ export default function AccountClient({ user }: { user: User }) {
               passwordLoading ||
               !currentPassword ||
               !newPassword ||
-              !confirmPassword
+              !confirmPassword ||
+              newPassword !== confirmPassword
             }
             onClick={handlePasswordChange}
           >
@@ -252,6 +263,7 @@ export default function AccountClient({ user }: { user: User }) {
               <Chip
                 key={t.value}
                 label={t.label}
+                aria-pressed={theme === t.value}
                 variant={theme === t.value ? "filled" : "outlined"}
                 color={theme === t.value ? "primary" : "default"}
                 onClick={() => handleThemeChange(t.value)}
@@ -308,6 +320,7 @@ export default function AccountClient({ user }: { user: User }) {
             label="Password"
             type="password"
             fullWidth
+            autoFocus
             value={deletePassword}
             onChange={(e) => setDeletePassword(e.target.value)}
           />
@@ -336,6 +349,7 @@ export default function AccountClient({ user }: { user: User }) {
 function SectionLabel({ label }: { label: string }) {
   return (
     <Typography
+      component="h2"
       variant="caption"
       sx={{
         fontWeight: 700,
