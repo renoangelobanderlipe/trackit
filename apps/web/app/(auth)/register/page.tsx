@@ -27,15 +27,25 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    const result = await register(name, email, password, passwordConfirmation);
-    setLoading(false);
+    try {
+      const result = await register(name, email, password, passwordConfirmation);
+      setLoading(false);
 
-    if (!result.ok) {
-      setError(parseApiError(result.error));
-      return;
+      if (!result.ok) {
+        setError(parseApiError(result.error));
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
     }
-
-    router.push("/dashboard");
   }
 
   return (

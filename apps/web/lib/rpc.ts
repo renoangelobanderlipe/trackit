@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 const LARAVEL_URL = process.env.LARAVEL_URL ?? "http://localhost:8000";
 const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -72,7 +71,12 @@ export async function rpc<T>(
   timeout.clear();
 
   if (res.status === 401) {
-    redirect("/login");
+    try {
+      const cookieStore = await cookies();
+      cookieStore.delete("trackit_authed");
+    } catch {
+      // May fail in Server Component context — non-fatal
+    }
   }
 
   if (!res.ok) {

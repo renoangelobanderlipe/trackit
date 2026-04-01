@@ -28,15 +28,25 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const result = await login(email, password, rememberMe);
-    setLoading(false);
+    try {
+      const result = await login(email, password, rememberMe);
+      setLoading(false);
 
-    if (!result.ok) {
-      setError(parseApiError(result.error));
-      return;
+      if (!result.ok) {
+        setError(parseApiError(result.error));
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
     }
-
-    router.push("/dashboard");
   }
 
   return (
